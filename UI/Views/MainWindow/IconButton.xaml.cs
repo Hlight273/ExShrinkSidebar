@@ -1,5 +1,9 @@
-﻿using System.Windows;
+﻿using ExShrinkSidebar.Script.Core;
+using ExShrinkSidebar.Script.Model;
+using ExShrinkSidebar.Script.Utils;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -7,29 +11,23 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
 {
     public partial class IconButton : System.Windows.Controls.UserControl
     {
-        string script;
+        private ButtonConfig _cfg;
 
         public IconButton()
         {
             InitializeComponent();
         }
 
-        public void SetData(string name, string icon, string cmd)
+        public void SetData(ButtonConfig cfg)
         {
-            IconText.Text = name;
-            script = cmd;
-
-            if (!string.IsNullOrEmpty(icon))
-            {
-                IconImage.Source = new BitmapImage(
-                    new System.Uri(icon, System.UriKind.RelativeOrAbsolute)
-                );
-            }
+            _cfg = cfg;
+            IconText.Text = cfg.name;
+            IconImage.Source = new BitmapImage(new Uri( ResHelper.GetExConfigTypeIconPath(cfg)));
         }
 
         private void OnClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            ScriptRunner.Run(script);
+            BtnCfgLogicRunner.Run(_cfg);
         }
 
         private void OnHover(object sender, System.Windows.Input.MouseEventArgs e)

@@ -28,6 +28,15 @@ namespace ExShrinkSidebar.Script.Core.Event
     }
 
     /// <summary>
+    /// 配置节点事件参数
+    /// </summary>
+    public class ConfigNodeEventArg : EventBase<ButtonConfig>
+    {
+        // 用于标识是哪个父节点下的子节点变化，方便刷新列表
+        public long ParentId { get; set; }
+    }
+
+    /// <summary>
     ///测试
     /// </summary>
     public class TestArg

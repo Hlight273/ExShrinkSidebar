@@ -77,13 +77,13 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
                     if (ButtonPanel.Children[i] is IconButton existingBtn)
                     {
                         existingBtn.Visibility = Visibility.Visible;
-                        existingBtn.SetData(b.name, b.icon, b.script);
+                        existingBtn.SetData(b);
                     }
                 }
                 else
                 {
                     var btn = new IconButton();
-                    btn.SetData(b.name, b.icon, b.script);
+                    btn.SetData(b);
                     btn.Margin = new Thickness(8);
                     ButtonPanel.Children.Add(btn);
                 }
