@@ -1,0 +1,99 @@
+## 忽略Visual Studio临时文件、生成结果和
+## 由流行的Visual Studio加载项生成的文件。
+
+# 用户特定文件
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# 生成结果
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# Visual Studio 2017及更高版本的本地设置目录
+.vs/
+
+# Visual Studio 缓存文件
+*.csproj.user
+*.vcxproj.filters
+*.vcxproj.user
+*.vbproj.user
+*.dbmdl
+
+# 单元测试
+TestResults/
+
+# 数据库文件
+*.mdf
+*.ldf
+
+# 日志文件
+*.log
+*.sqlite
+
+# NuGet包
+packages/
+*.nupkg
+
+# 发布配置
+app.publish/
+publish/
+publish.ps1
+
+# 备份文件
+*.bak
+*.old
+*.orig
+*.tmp
+
+# 用户配置文件
+appsettings.Development.json
+secrets.json
+
+# 特定于开发工具
+*.ntvsdoc
+*.njsproj
+*.sln.ide
+*.idea/
+*.vsix
+*.vscode/
+
+# Windows系统文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS文件
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Rider IDE
+.idea/
+*.sln.iml
+
+# 编译后的文件
+*.dll
+*.exe
+*.pdb
+*.so
+*.dylib
+
+# 项目特定文件（可根据需要调整）
+/packages/
+/*.nupkg

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Script\Core\Event\EventIds.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Asset\Resource\config.json" />
+    <None Remove="Asset\Resource\Icons\terminal.ico" />
+    <None Remove="Asset\Texture\Common\arrow.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Asset\Resource\Config\config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Asset\Resource\Icons\terminal.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Asset\Texture\Common\arrow.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Asset\Texture\Controls\DockPositionToggle\" />
+  </ItemGroup>
+
+</Project>

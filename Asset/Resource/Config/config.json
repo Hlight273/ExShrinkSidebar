@@ -1,0 +1,16 @@
+﻿{
+  "buttons": [
+    {
+      "name": "记事本",
+      "script": "notepad.exe"
+    },
+    {
+      "name": "CMD",
+      "script": "cmd.exe"
+    },
+    {
+      "name": "打开项目",
+      "script": "explorer.exe D:\\project"
+    }
+  ]
+}
