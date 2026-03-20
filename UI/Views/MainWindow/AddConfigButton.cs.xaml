@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="ExShrinkSidebar.UI.Views.MainWindow.AddConfigButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="72"
+ Height="72">
+
+    <Border x:Name="RootBorder"
+            Background="Transparent"
+            CornerRadius="6"
+            Padding="6"
+            MouseEnter="OnHover"
+            MouseLeave="OnLeave"
+            MouseLeftButtonUp="OnClick">
+
+        <StackPanel HorizontalAlignment="Center">
+
+            <Image x:Name="IconImage"
+                   Width="32"
+                   Height="32"
+                   Margin="0,0,0,4" Source="/Asset/Resource/Icons/addConfig.png"/>
+
+            <TextBlock x:Name="IconText"
+                       Text="添加配置"
+                       FontSize="12"
+                       TextAlignment="Center"
+                       Foreground="White"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"/>
+
+        </StackPanel>
+
+    </Border>
+
+</UserControl>

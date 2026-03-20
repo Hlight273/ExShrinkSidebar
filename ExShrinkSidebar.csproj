@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <None Remove="Asset\Resource\config.json" />
+    <None Remove="Asset\Resource\Icons\addConfig.png" />
     <None Remove="Asset\Resource\Icons\terminal.ico" />
     <None Remove="Asset\Texture\Common\arrow.png" />
   </ItemGroup>
@@ -29,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Asset\Resource\Icons\addConfig.png" />
     <Resource Include="Asset\Texture\Common\arrow.png" />
   </ItemGroup>
 

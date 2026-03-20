@@ -15,10 +15,17 @@
     <Grid>
         <!-- 主内容区 -->
         <Border Background="#DD1D1E22" CornerRadius="8" Padding="10">
-            <StackPanel x:Name="ButtonPanel"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"/>
+            <StackPanel x:Name="InnerPanel"
+                 Orientation="Horizontal"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center">
+                <StackPanel x:Name="ButtonPanel"
+                     Orientation="Horizontal"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"/>
+                <ctrl:AddConfigButton/>
+            </StackPanel>
+               
         </Border>
 
         <!-- 停靠位置控件 - 放在右上角 -->

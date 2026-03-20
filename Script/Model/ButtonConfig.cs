@@ -1,5 +1,14 @@
 ﻿namespace ExShrinkSidebar.Script.Model
 {
+
+    public enum ExConfigType
+    {
+        TypeA,
+        TypeB,
+        TypeC,
+        Custom
+    }
+
     public class AppConfig
     {
         public List<ButtonConfig> buttons { get; set; }

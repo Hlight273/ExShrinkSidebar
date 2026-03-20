@@ -88,8 +88,9 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
                     ButtonPanel.Children.Add(btn);
                 }
             }
-            ButtonPanel.Orientation =
-                ScreenHelper.getMainLayoutOrientation(DockState.CurrentEdge);
+            var orientation = ScreenHelper.getMainLayoutOrientation(DockState.CurrentEdge);
+            ButtonPanel.Orientation = InnerPanel.Orientation = orientation;
+            
         }
 
         #region Drag Logic
@@ -181,8 +182,8 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
                 DragBar.Height = DRAG_BAR_SIZE;
                 DragBar.Width = double.NaN;
                 DragBar.VerticalAlignment = DockState.CurrentEdge == DockEdge.Top
-                    ? System.Windows.VerticalAlignment.Bottom
-                    : System.Windows.VerticalAlignment.Top;
+                    ? VerticalAlignment.Bottom
+                    : VerticalAlignment.Top;
                 DragBar.HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch;
                 DragBar.Cursor = HORIZONTAL_CURSOR;
             }
@@ -193,7 +194,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
                 DragBar.HorizontalAlignment = DockState.CurrentEdge == DockEdge.Left
                     ? System.Windows.HorizontalAlignment.Right
                     : System.Windows.HorizontalAlignment.Left;
-                DragBar.VerticalAlignment = System.Windows.VerticalAlignment.Stretch;
+                DragBar.VerticalAlignment = VerticalAlignment.Stretch;
                 DragBar.Cursor = VERTICAL_CURSOR;
             }
         }
