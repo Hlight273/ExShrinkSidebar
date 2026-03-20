@@ -12,13 +12,18 @@ namespace ExShrinkSidebar.Script.Core
 {
     public static class DockState
     {
-        private  static DockModel model=new DockModel
+        public  static DockModel _model=new DockModel
         {
             edge = DockEdge.Left,
             screenIndex = 0
         };
-        public static DockEdge CurrentEdge { get=>model.edge; private set => model.edge = value; }
-        public static int CurrentScreenIndex { get => model.screenIndex; private set => model.screenIndex = value; }
+        public static DockModel Model
+        {
+            get => _model;
+            private set => _model = value;
+        }
+        public static DockEdge CurrentEdge { get=>_model.edge; private set => _model.edge = value; }
+        public static int CurrentScreenIndex { get => _model.screenIndex; private set => _model.screenIndex = value; }
 
         public static DockOrientation curDockOrientation
         {
@@ -33,8 +38,10 @@ namespace ExShrinkSidebar.Script.Core
                 return;
             if (CurrentEdge != edge)
             {
+                var oldModel = (DockModel)_model.Clone();
                 CurrentEdge = edge;
-                EVENT.emit(EventIds.ON_DOCK_MODEL_CHANGED, new VoidEvent() { });
+                var newModel = (DockModel)_model.Clone();
+                EVENT.emit(EventIds.ON_DOCK_MODEL_CHANGED, new DockModelArg(oldModel, newModel));
             }
         }
 
@@ -42,8 +49,10 @@ namespace ExShrinkSidebar.Script.Core
         {
             if (CurrentScreenIndex != index)
             {
+                var oldModel = (DockModel)_model.Clone();
                 CurrentScreenIndex = index;
-                EVENT.emit(EventIds.ON_DOCK_MODEL_CHANGED, new VoidEvent() { });
+                var newModel = (DockModel)_model.Clone();
+                EVENT.emit(EventIds.ON_DOCK_MODEL_CHANGED, new DockModelArg(oldModel, newModel));
             }
         }
     }

@@ -18,7 +18,13 @@ namespace ExShrinkSidebar.Script.Core.Event
     /// Dock数据更新
     /// </summary>
     public class DockModelArg : EventBase { 
-        public DockModel dockModel { get; set; }
+        public DockModel oldModel { get; set; }
+        public DockModel newModel { get; set; }
+        public DockModelArg(DockModel oldModel, DockModel newModel)
+        {
+            this.oldModel = oldModel;
+            this.newModel = newModel;
+        }
     }
 
     /// <summary>

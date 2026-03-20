@@ -12,9 +12,19 @@
     /// <summary>
     /// dock数据
     /// </summary>
-    public class DockModel
+    public class DockModel : ICloneable
     {
         public DockEdge edge { get; set; }
         public int screenIndex { get; set; }
+
+        public object Clone()
+        {
+            return new DockModel
+            {
+                edge = this.edge,
+                screenIndex = this.screenIndex
+            };
+        }
     }
+
 }

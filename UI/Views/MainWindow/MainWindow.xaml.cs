@@ -1,8 +1,10 @@
 ﻿using ExShrinkSidebar.Script.Core;
 using ExShrinkSidebar.Script.Core.Event;
+using ExShrinkSidebar.Script.Model;
 using ExShrinkSidebar.Script.Utils;
 using ExShrinkSidebar.UI.ViewModels.Common;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -14,11 +16,6 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
     public partial class MainWindow : WindowBase
     {
         DockManager dock;
-        WindowAnimator animator;
-
-        //DockEdge edge = DockEdge.Left;
-
-        //int screenIndex = 0;
 
         public MainWindow()
         {
@@ -28,22 +25,29 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
 
         protected override void RegisterEvents()
         {
-            EVENT.on<VoidEvent>(EventIds.ON_DOCK_MODEL_CHANGED, (sender, e) => updateView());
+            EVENT.on<DockModelArg>(EventIds.ON_DOCK_MODEL_CHANGED, (sender, e) => updateView(e.oldModel,e.newModel));
         }
 
         void Init(object sender, RoutedEventArgs e)
         {
-            animator = new WindowAnimator(this);
-            dock = new DockManager(this, animator);
+            dock = new DockManager(this);
             DockState.SetEdge(DockEdge.Left);
-            updateView();
+            updateView(null, DockState.Model);
         }
 
-        void updateView()
+        async void updateView(DockModel oldModel, DockModel newModel)
         {
-            dock.updateEdgePosition();
+            bool edgeChanged = oldModel?.edge != newModel?.edge;
+            if (edgeChanged) {
+                Debug.WriteLine("Edge changed");
+                this.Opacity = 0;
+                dock.updateEdgePosition();
+            }
             SetupDragBar();
             refreshButtons();
+            this.Opacity = 1;
+
+
         }
 
         void refreshButtons()

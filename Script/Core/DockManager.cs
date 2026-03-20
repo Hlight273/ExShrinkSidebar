@@ -1,214 +1,171 @@
-﻿using ExShrinkSidebar.Script.Core;
-using ExShrinkSidebar.Script.Core.Event;
-using ExShrinkSidebar.Script.Utils;
-using ExShrinkSidebar.UI.Views.MainWindow;
+﻿using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Forms.VisualStyles;
-using System.Windows.Threading; // 只加这个命名空间
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Windows.Interop;
+using ExShrinkSidebar.Script.Core;
+using ExShrinkSidebar.Script.Utils;
 
 public class DockManager
 {
-    private System.Windows.Window window;
-    private WindowAnimator animator;
-    bool paused = false;
+    private Window window;
+    private IntPtr hwnd = IntPtr.Zero;
+    private bool paused = false;
 
-    // 只加防抖相关的字段
-    private DispatcherTimer _debounceTimer;
-    private int _lastX, _lastY;
-    private bool _hasPendingMove = false;
-
-    public void Pause()
-    {
-        paused = true;
-    }
-
-    public void Resume()
-    {
-        paused = false;
-    }
-
-    private double HiddenOffset
-    {
-        get => (DockState.curDockOrientation == DockOrientation.Vertical) ? window.Width : window.Height;
-    }
-
-    public DockManager(System.Windows.Window w, WindowAnimator a)
+    public DockManager(Window w)
     {
         window = w;
-        animator = a;
+        window.SourceInitialized += (s, e) =>
+        {
+            hwnd = new WindowInteropHelper(window).Handle;
+        };
 
-        // 只加防抖定时器初始化
-        _debounceTimer = new DispatcherTimer();
-        _debounceTimer.Interval = TimeSpan.FromMilliseconds(30);
-        _debounceTimer.Tick += OnDebounceTimerTick;
+        if (hwnd == IntPtr.Zero)
+        {
+            hwnd = new WindowInteropHelper(window).Handle;
+        }
 
         Debug.WriteLine("DockManager 初始化");
         HookManager.MouseMoved += OnMouseMove;
         HookManager.Start();
     }
 
+    public void Pause() => paused = true;
+    public void Resume() => paused = false;
+
+    private double HiddenOffset
+    {
+        get => (DockState.curDockOrientation == DockOrientation.Vertical) ? window.Width : window.Height;
+    }
+
+    private void UpdateWindowPosition(int left, int top, int width, int height)
+    {
+        if (hwnd == IntPtr.Zero) return;
+        SetWindowPos(hwnd, IntPtr.Zero, left, top, width, height, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+    }
+
     public void updateEdgePosition()
     {
-        var edge = DockState.CurrentEdge;
-        DockState.SetEdge(edge);
-
         var bound = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
-        var width = 200;
+        const double DOCK_SIZE = 150;
+        double EDGE_LENGTH = (DockState.curDockOrientation == DockOrientation.Vertical
+            ? bound.Height : bound.Width) * 0.9;
 
-        switch (edge)
+        int newLeft, newTop, newWidth, newHeight;
+
+        switch (DockState.CurrentEdge)
         {
             case DockEdge.Top:
-                window.Left = bound.Left;
-                window.Width = bound.Width / 2;
-                window.Top = bound.Top - HiddenOffset;
-                window.Height = width;
+                newWidth = (int)EDGE_LENGTH; newHeight = (int)DOCK_SIZE;
+                newLeft = (int)(bound.Left + (bound.Width - EDGE_LENGTH) / 2);
+                newTop = (int)(bound.Top - DOCK_SIZE);
                 break;
-
             case DockEdge.Bottom:
-                window.Left = bound.Left;
-                window.Width = bound.Width / 2;
-                window.Top = bound.Bottom;
-                window.Height = width;
+                newWidth = (int)EDGE_LENGTH; newHeight = (int)DOCK_SIZE;
+                newLeft = (int)(bound.Left + (bound.Width - EDGE_LENGTH) / 2);
+                newTop = (int)(bound.Bottom);
                 break;
-
             case DockEdge.Left:
-                window.Top = bound.Top;
-                window.Height = bound.Height / 2;
-                window.Left = bound.Left - HiddenOffset;
-                window.Width = width;
+                newWidth = (int)DOCK_SIZE; newHeight = (int)EDGE_LENGTH;
+                newLeft = (int)(bound.Left - DOCK_SIZE);
+                newTop = (int)(bound.Top + (bound.Height - EDGE_LENGTH) / 2);
                 break;
-
             case DockEdge.Right:
-                window.Top = bound.Top;
-                window.Height = bound.Height / 2;
-                window.Left = bound.Right;
-                window.Width = width;
+                newWidth = (int)DOCK_SIZE; newHeight = (int)EDGE_LENGTH;
+                newLeft = (int)(bound.Right);
+                newTop = (int)(bound.Top + (bound.Height - EDGE_LENGTH) / 2);
                 break;
+            default: return;
         }
+
+        UpdateWindowPosition(newLeft, newTop, newWidth, newHeight);
     }
 
-    // 只改这个方法：记录鼠标位置，启动定时器
     private void OnMouseMove(int x, int y)
     {
-        if (paused) return;
+        if (paused || hwnd == IntPtr.Zero) return;
 
-        _lastX = x;
-        _lastY = y;
-        _hasPendingMove = true;
-
-        _debounceTimer.Stop();
-        _debounceTimer.Start();
-    }
-
-    // 新增：防抖定时器处理
-    private void OnDebounceTimerTick(object sender, EventArgs e)
-    {
-        _debounceTimer.Stop();
-
-        if (paused) return;
-        if (!_hasPendingMove) return;
-
-        _hasPendingMove = false;
-
-        // 执行原来的逻辑
-        if (!ScreenHelper.IsPointOnScreen(_lastX, _lastY, DockState.CurrentScreenIndex))
+        if (!ScreenHelper.IsPointOnScreen(x, y, DockState.CurrentScreenIndex))
         {
             HideDock();
             return;
         }
 
         var bound = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
-        var leaveOffset = HiddenOffset + 20;
+        var offset = HiddenOffset + 20;
 
         switch (DockState.CurrentEdge)
         {
             case DockEdge.Top:
-                if (_lastY <= bound.Top + 2) ShowDock();
-                else if (_lastY > bound.Top + leaveOffset) HideDock();
+                if (y <= bound.Top + 2) ShowDock();
+                else if (y > bound.Top + offset) HideDock();
                 break;
-
             case DockEdge.Bottom:
-                if (_lastY >= bound.Bottom - 2) ShowDock();
-                else if (_lastY < bound.Bottom - leaveOffset) HideDock();
+                if (y >= bound.Bottom - 2) ShowDock();
+                else if (y < bound.Bottom - offset) HideDock();
                 break;
-
             case DockEdge.Left:
-                if (_lastX <= bound.Left + 2) ShowDock();
-                else if (_lastX > bound.Left + leaveOffset) HideDock();
+                if (x <= bound.Left + 2) ShowDock();
+                else if (x > bound.Left + offset) HideDock();
                 break;
-
             case DockEdge.Right:
-                if (_lastX >= bound.Right - 2) ShowDock();
-                else if (_lastX < bound.Right - leaveOffset) HideDock();
+                if (x >= bound.Right - 2) ShowDock();
+                else if (x < bound.Right - offset) HideDock();
                 break;
         }
     }
 
-    // ShowDock 和 HideDock 完全不变
-    private void ShowDock()
+    public void ShowDock()
     {
         var bound = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
-
-        Debug.WriteLine("显示 Dock");
-
-        double targetLeft = window.Left;
-        double targetTop = window.Top;
+        int targetLeft = (int)window.Left;
+        int targetTop = (int)window.Top;
+        int currentWidth = (int)window.ActualWidth;
+        int currentHeight = (int)window.ActualHeight;
 
         switch (DockState.CurrentEdge)
         {
-            case DockEdge.Top:
-                targetTop = bound.Top;
-                break;
-            case DockEdge.Bottom:
-                targetTop = bound.Bottom - HiddenOffset;
-                break;
-            case DockEdge.Left:
-                targetLeft = bound.Left;
-                break;
-            case DockEdge.Right:
-                targetLeft = bound.Right - HiddenOffset;
-                break;
+            case DockEdge.Top: targetTop = (int)bound.Top; break;
+            case DockEdge.Bottom: targetTop = (int)(bound.Bottom - HiddenOffset); break;
+            case DockEdge.Left: targetLeft = (int)bound.Left; break;
+            case DockEdge.Right: targetLeft = (int)(bound.Right - HiddenOffset); break;
         }
-        animator.AnimateShowDock(targetLeft, targetTop);
+
+        UpdateWindowPosition(targetLeft, targetTop, currentWidth, currentHeight);
     }
 
-    private void HideDock()
+    public void HideDock()
     {
         var bound = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
-
-        Debug.WriteLine("隐藏 Dock");
-
-        double targetLeft = window.Left;
-        double targetTop = window.Top;
+        int targetLeft = (int)window.Left;
+        int targetTop = (int)window.Top;
+        int currentWidth = (int)window.ActualWidth;
+        int currentHeight = (int)window.ActualHeight;
 
         switch (DockState.CurrentEdge)
         {
-            case DockEdge.Top:
-                targetTop = bound.Top - HiddenOffset;
-                break;
-            case DockEdge.Bottom:
-                targetTop = bound.Bottom;
-                break;
-            case DockEdge.Left:
-                targetLeft = bound.Left - HiddenOffset;
-                break;
-            case DockEdge.Right:
-                targetLeft = bound.Right;
-                break;
+            case DockEdge.Top: targetTop = (int)(bound.Top - HiddenOffset); break;
+            case DockEdge.Bottom: targetTop = (int)bound.Bottom; break;
+            case DockEdge.Left: targetLeft = (int)(bound.Left - HiddenOffset); break;
+            case DockEdge.Right: targetLeft = (int)bound.Right; break;
         }
-        animator.AnimateHideDock(targetLeft, targetTop);
+
+        UpdateWindowPosition(targetLeft, targetTop, currentWidth, currentHeight);
     }
 
-    // 加个清理方法（可选）
     public void Cleanup()
     {
-        if (_debounceTimer != null)
-        {
-            _debounceTimer.Stop();
-            _debounceTimer.Tick -= OnDebounceTimerTick;
-        }
         HookManager.MouseMoved -= OnMouseMove;
+        HookManager.Stop();
     }
+
+    #region Win32 API
+    [DllImport("user32.dll")]
+    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
+        int X, int Y, int cx, int cy, uint uFlags);
+
+    private const uint SWP_NOZORDER = 0x0004;
+    private const uint SWP_NOACTIVATE = 0x0010;
+    private const uint SWP_NOSENDCHANGING = 0x0400;
+    #endregion
 }
