@@ -8,7 +8,7 @@
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
-        Height="60">
+        Height="150">
     
     
 
@@ -27,8 +27,8 @@
             Height="100"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
-            Margin="0,-15,-15,0"
-            Opacity="0.9"/>
+            Margin="0,0,0,0"
+            Opacity="0.8"/>
 
         <!-- 拖拽条 -->
         <Border x:Name="DragBar"

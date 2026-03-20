@@ -7,31 +7,64 @@
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="100" Width="100" Height="100">
 
+    <UserControl.Resources>
+        <!-- 定义公用的按钮样式：去除默认背景，添加图片高亮效果 -->
+        <Style x:Key="ImageButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{x:Null}"/>
+            <Setter Property="BorderBrush" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <!-- 只展示内容，不添加任何默认装饰 -->
+                        <ContentPresenter x:Name="contentPresenter" 
+                                          ContentTemplate="{TemplateBinding ContentTemplate}" 
+                                          Content="{TemplateBinding Content}" 
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Width="100" Height="100">
         <!-- 上箭头 -->
         <Button x:Name="TopBtn" 
                 Width="30" Height="30" 
                 Click="OnClickTop" 
-                Opacity="0.995" 
-                Background="{x:Null}"
+                Style="{StaticResource ImageButtonStyle}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
-                Margin="0,15,0,0">
+                Margin="0,10,0,0">
             <Image Source="/Asset/Texture/Common/arrow.png" 
                    Cursor="Hand" 
                    Stretch="None" 
-                   RenderTransformOrigin="0.5,0.5"/>
+                   RenderTransformOrigin="0.5,0.5">
+                <Image.Style>
+                    <Style TargetType="Image">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <!-- 鼠标悬停时增加亮度，这里使用白色遮罩模拟发光效果 -->
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="0" Color="White" Opacity="0.8" BlurRadius="5"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
         </Button>
 
         <!-- 下箭头 (旋转180度) -->
         <Button x:Name="BottomBtn" 
                 Width="30" Height="30" 
                 Click="OnClickBottom" 
-                Opacity="0.995" 
-                Background="{x:Null}"
+                Style="{StaticResource ImageButtonStyle}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Bottom"
-                Margin="0,0,0,15">
+                Margin="0,0,0,10">
             <Image Source="/Asset/Texture/Common/arrow.png" 
                    Cursor="Hand" 
                    Stretch="None" 
@@ -39,6 +72,19 @@
                 <Image.RenderTransform>
                     <RotateTransform Angle="180"/>
                 </Image.RenderTransform>
+                <Image.Style>
+                    <Style TargetType="Image">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="0" Color="White" Opacity="0.8" BlurRadius="5"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
             </Image>
         </Button>
 
@@ -46,11 +92,10 @@
         <Button x:Name="LeftBtn" 
                 Width="30" Height="30" 
                 Click="OnClickLeft" 
-                Opacity="0.995" 
-                Background="{x:Null}"
+                Style="{StaticResource ImageButtonStyle}"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Margin="15,0,0,0">
+                Margin="10,0,0,0">
             <Image Source="/Asset/Texture/Common/arrow.png" 
                    Cursor="Hand" 
                    Stretch="None" 
@@ -58,6 +103,19 @@
                 <Image.RenderTransform>
                     <RotateTransform Angle="-90"/>
                 </Image.RenderTransform>
+                <Image.Style>
+                    <Style TargetType="Image">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="0" Color="White" Opacity="0.8" BlurRadius="5"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
             </Image>
         </Button>
 
@@ -65,11 +123,10 @@
         <Button x:Name="RightBtn" 
                 Width="30" Height="30" 
                 Click="OnClickRight" 
-                Opacity="0.995" 
-                Background="{x:Null}"
+                Style="{StaticResource ImageButtonStyle}"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
-                Margin="0,0,15,0">
+                Margin="0,0,10,0">
             <Image Source="/Asset/Texture/Common/arrow.png" 
                    Cursor="Hand" 
                    Stretch="None" 
@@ -77,13 +134,26 @@
                 <Image.RenderTransform>
                     <RotateTransform Angle="90"/>
                 </Image.RenderTransform>
+                <Image.Style>
+                    <Style TargetType="Image">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="0" Color="White" Opacity="0.8" BlurRadius="5"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
             </Image>
         </Button>
 
         <!-- 中心装饰圆点（可选） -->
         <Ellipse Width="20" Height="20" 
-                 Fill="#FF63748A" 
-                 Stroke="#555" 
+                 Fill="#FF688BC3" 
+                 Stroke="#FF2D3065" 
                  StrokeThickness="1.5" 
                  Opacity="0.8"
                  HorizontalAlignment="Center"
