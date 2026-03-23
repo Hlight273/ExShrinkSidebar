@@ -10,6 +10,8 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using Forms = System.Windows.Forms;
 
 namespace ExShrinkSidebar.UI.Views.MainWindow
 {
@@ -32,7 +34,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
         void Init(object sender, RoutedEventArgs e)
         {
             dock = new DockManager(this);
-            DockState.SetEdge(DockEdge.Left);
+            DockState.SetEdge(DockEdge.Top);
             updateView(null, DockState.Model);
         }
 
@@ -100,6 +102,46 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
         private double startLeft;
         private double startTop;
 
+        private double GetWindowWidthForClamp()
+        {
+            var width = Width;
+            if (double.IsNaN(width) || width <= 0)
+            {
+                width = ActualWidth;
+            }
+
+            return width;
+        }
+
+        private double GetWindowHeightForClamp()
+        {
+            var height = Height;
+            if (double.IsNaN(height) || height <= 0)
+            {
+                height = ActualHeight;
+            }
+
+            return height;
+        }
+
+        private Matrix TransformFromDevice
+        {
+            get
+            {
+                var source = PresentationSource.FromVisual(this);
+                return source?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
+            }
+        }
+
+        private System.Windows.Point PixelsToDip(System.Drawing.Point point) => TransformFromDevice.Transform(new System.Windows.Point(point.X, point.Y));
+
+        private Rect ScreenBoundsToDip(System.Drawing.Rectangle bounds)
+        {
+            var topLeft = PixelsToDip(bounds.Location);
+            var bottomRight = PixelsToDip(new System.Drawing.Point(bounds.Right, bounds.Bottom));
+            return new Rect(topLeft, bottomRight);
+        }
+
         private void DragBar_MouseDown(object sender, MouseButtonEventArgs e)
         {
             isDragging = true;
@@ -107,7 +149,8 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
             // 暂停Dock逻辑
             dock?.Pause();
 
-            startMouseScreen = PointToScreen(e.GetPosition(this));
+            var cursorPos = Forms.Control.MousePosition;
+            startMouseScreen = PixelsToDip(cursorPos);
 
             startLeft = Left;
             startTop = Top;
@@ -119,25 +162,27 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
         {
             if (!isDragging) return;
 
-            var screenPos = PointToScreen(e.GetPosition(this));
+            var cursorPos = Forms.Control.MousePosition;
+            var screenPos = PixelsToDip(cursorPos);
 
             double dx = screenPos.X - startMouseScreen.X;
             double dy = screenPos.Y - startMouseScreen.Y;
 
-            var bound = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
+            var bound = ScreenBoundsToDip(ScreenHelper.GetBounds(DockState.CurrentScreenIndex));
 
             switch (DockState.CurrentEdge)
             {
                 case DockEdge.Top:
                 case DockEdge.Bottom:
+                    var width = GetWindowWidthForClamp();
 
                     double newLeft = startLeft + dx;
 
                     if (newLeft < bound.Left)
                         newLeft = bound.Left;
 
-                    if (newLeft + Width > bound.Right)
-                        newLeft = bound.Right - Width;
+                    if (newLeft + width > bound.Right)
+                        newLeft = bound.Right - width;
 
                     Left = newLeft;
 
@@ -145,14 +190,15 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
 
                 case DockEdge.Left:
                 case DockEdge.Right:
+                    var height = GetWindowHeightForClamp();
 
                     double newTop = startTop + dy;
 
                     if (newTop < bound.Top)
                         newTop = bound.Top;
 
-                    if (newTop + Height > bound.Bottom)
-                        newTop = bound.Bottom - Height;
+                    if (newTop + height > bound.Bottom)
+                        newTop = bound.Bottom - height;
 
                     Top = newTop;
 

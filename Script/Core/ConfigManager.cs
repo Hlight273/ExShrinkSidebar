@@ -52,6 +52,7 @@ namespace ExShrinkSidebar.Script.Core
             {
                 Config = new AppConfig();
                 NormalizeConfig(Config);
+                Save();
             }
         }
 
