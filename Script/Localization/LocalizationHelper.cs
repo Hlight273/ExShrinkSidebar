@@ -1,30 +1,39 @@
-﻿using ExShrinkSidebar.Asset.Properties;
+using ExShrinkSidebar.Asset.Properties;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
+using System.Globalization;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace ExShrinkSidebar.Script.Localization
 {
     public static class LocalizationHelper
     {
+        public static readonly IReadOnlyList<string> SupportedCultures = new List<string> { "zh-CN", "en-US" };
+
         public static string GetLocalizedString(Enum value)
         {
-            // 1. 获取枚举上的 Description 特性
             FieldInfo field = value.GetType().GetField(value.ToString());
-            DescriptionAttribute attribute = field.GetCustomAttribute<DescriptionAttribute>();
+            DescriptionAttribute attribute = field?.GetCustomAttribute<DescriptionAttribute>();
 
             if (attribute != null)
             {
-                // 2. 根据 Key 从资源管理器中读取字符串
-                // ResourceManager 会自动根据当前线程语言选择 .resx 文件
                 var resourceManager = StringResources.ResourceManager;
                 return resourceManager.GetString(attribute.Description) ?? value.ToString();
             }
+
             return value.ToString();
+        }
+
+        public static void ApplyCulture(string cultureName)
+        {
+            var culture = new CultureInfo(cultureName);
+            StringResources.Culture = culture;
+            Thread.CurrentThread.CurrentCulture = culture;
+            Thread.CurrentThread.CurrentUICulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
         }
     }
 }

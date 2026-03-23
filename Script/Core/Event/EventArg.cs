@@ -36,6 +36,22 @@ namespace ExShrinkSidebar.Script.Core.Event
         public long ParentId { get; set; }
     }
 
+    public class ConfigNodeReorderEventArg : EventBase
+    {
+        public ButtonConfig DragNode { get; set; }
+        public ButtonConfig TargetNode { get; set; }
+        public bool InsertAfter { get; set; }
+    }
+
+    public class LanguageChangedEventArg : EventBase
+    {
+        public string CultureName { get; set; }
+    }
+
+    public class ConfigSavedEventArg : EventBase
+    {
+    }
+
     /// <summary>
     ///测试
     /// </summary>

@@ -11,6 +11,7 @@ namespace ExShrinkSidebar.Script.Core
     {
         private static readonly Lazy<ConfigManager> _instance =
             new Lazy<ConfigManager>(() => new ConfigManager());
+        private long _nextReservedId;
 
         public static ConfigManager Instance => _instance.Value;
 
@@ -44,10 +45,13 @@ namespace ExShrinkSidebar.Script.Core
                     Config = JsonSerializer.Deserialize<AppConfig>(json)
                              ?? new AppConfig();
                 }
+
+                NormalizeConfig(Config);
             }
             catch
             {
                 Config = new AppConfig();
+                NormalizeConfig(Config);
             }
         }
 
@@ -99,6 +103,7 @@ namespace ExShrinkSidebar.Script.Core
         public void UpdateAndSave(AppConfig newConfig)
         {
             Config = newConfig ?? new AppConfig();
+            NormalizeConfig(Config);
             Save();
         }
 
@@ -110,6 +115,7 @@ namespace ExShrinkSidebar.Script.Core
         {
             Config ??= new AppConfig();
             Config.buttons = buttons;
+            NormalizeConfig(Config);
             Save();
         }
 
@@ -147,22 +153,83 @@ namespace ExShrinkSidebar.Script.Core
 
         public long GetNextId()
         {
-            if (Config?.buttons == null || !Config.buttons.Any()) return 1;
+            var maxId = GetMaxId(Config?.buttons);
+            return maxId + 1;
+        }
 
-            // 递归查找所有节点中的最大 ID (包括子节点)
-            long maxId = 0;
-            void FindMax(List<ButtonConfig> nodes)
+        public long ReserveNextId()
+        {
+            var maxId = GetMaxId(Config?.buttons);
+            if (_nextReservedId <= maxId)
             {
-                if (nodes == null) return;
-                foreach (var node in nodes)
+                _nextReservedId = maxId + 1;
+            }
+
+            return _nextReservedId++;
+        }
+
+        public AppConfig CloneConfig()
+        {
+            var json = JsonSerializer.Serialize(Config ?? new AppConfig());
+            var copy = JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
+            NormalizeConfig(copy);
+            return copy;
+        }
+
+        public void NormalizeConfig(AppConfig config)
+        {
+            config ??= new AppConfig();
+            config.buttons ??= new List<ButtonConfig>();
+            NormalizeNodes(config.buttons, null);
+        }
+
+        private void NormalizeNodes(List<ButtonConfig> nodes, ButtonConfig parent)
+        {
+            if (nodes == null)
+            {
+                return;
+            }
+
+            foreach (var node in nodes)
+            {
+                node.name ??= string.Empty;
+                node.icon ??= string.Empty;
+                node.arg ??= new ButtonConfigNodeArg();
+                if (node.configType == ExConfigType.Execute && string.IsNullOrWhiteSpace(node.arg.path) && !string.IsNullOrWhiteSpace(node.arg.script))
                 {
-                    if (node.id > maxId) maxId = node.id;
-                    if (node.logicChain != null) FindMax(node.logicChain);
+                    node.arg.path = node.arg.script;
+                }
+                node.logicChain ??= new List<ButtonConfig>();
+                node.Parent = parent;
+                node.IsExpanded = node.useChainLogic;
+                NormalizeNodes(node.logicChain, node);
+            }
+        }
+
+        private long GetMaxId(List<ButtonConfig> nodes)
+        {
+            long maxId = 0;
+
+            void FindMax(List<ButtonConfig> source)
+            {
+                if (source == null)
+                {
+                    return;
+                }
+
+                foreach (var node in source)
+                {
+                    if (node.id > maxId)
+                    {
+                        maxId = node.id;
+                    }
+
+                    FindMax(node.logicChain);
                 }
             }
 
-            FindMax(Config.buttons);
-            return maxId + 1;
+            FindMax(nodes);
+            return maxId;
         }
     }
 }

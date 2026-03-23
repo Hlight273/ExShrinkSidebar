@@ -70,6 +70,24 @@ namespace ExShrinkSidebar.Asset.Properties {
         }
         
         /// <summary>
+        ///   查找类似 组合动作 的本地化字符串。
+        /// </summary>
+        public static string ExConfigType_Combine {
+            get {
+                return ResourceManager.GetString("ExConfigType_Combine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 直接执行 的本地化字符串。
+        /// </summary>
+        public static string ExConfigType_Execute {
+            get {
+                return ResourceManager.GetString("ExConfigType_Execute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 记事本 的本地化字符串。
         /// </summary>
         public static string ExConfigType_Notepad {
@@ -84,6 +102,285 @@ namespace ExShrinkSidebar.Asset.Properties {
         public static string ExConfigType_OpenFolder {
             get {
                 return ResourceManager.GetString("ExConfigType_OpenFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 新增根配置 的本地化字符串。
+        /// </summary>
+        public static string Ui_AddRootTooltip {
+            get {
+                return ResourceManager.GetString("Ui_AddRootTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 脚本配置编辑器 的本地化字符串。
+        /// </summary>
+        public static string Ui_ConfigEditorTitle {
+            get {
+                return ResourceManager.GetString("Ui_ConfigEditorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 配置名称： 的本地化字符串。
+        /// </summary>
+        public static string Ui_ConfigNameLabel {
+            get {
+                return ResourceManager.GetString("Ui_ConfigNameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 参数 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailArguments {
+            get {
+                return ResourceManager.GetString("Ui_DetailArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 浏览 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailBrowse {
+            get {
+                return ResourceManager.GetString("Ui_DetailBrowse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 取消 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailCancel {
+            get {
+                return ResourceManager.GetString("Ui_DetailCancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 确定 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailConfirm {
+            get {
+                return ResourceManager.GetString("Ui_DetailConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 角落位置 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailCorner {
+            get {
+                return ResourceManager.GetString("Ui_DetailCorner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 打开目录后调整到屏幕角落 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailEnablePlacement {
+            get {
+                return ResourceManager.GetString("Ui_DetailEnablePlacement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 执行目标 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailExecuteTarget {
+            get {
+                return ResourceManager.GetString("Ui_DetailExecuteTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 目录路径 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailFolderPath {
+            get {
+                return ResourceManager.GetString("Ui_DetailFolderPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 高 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailHeight {
+            get {
+                return ResourceManager.GetString("Ui_DetailHeight", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Execute 会直接打开目标路径，并将参数字符串原样传给系统。适合 exe、bat、cmd、ps1 或其他已关联的文件。 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailHintExecute {
+            get {
+                return ResourceManager.GetString("Ui_DetailHintExecute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 当前动作类型没有额外参数。 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailHintNone {
+            get {
+                return ResourceManager.GetString("Ui_DetailHintNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 可配置打开的目录路径，并在目录窗口弹出后按屏幕四角和尺寸进行重定位。宽高留空时默认使用当前屏幕的一半。 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailHintOpenFolder {
+            get {
+                return ResourceManager.GetString("Ui_DetailHintOpenFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 宽 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailWidth {
+            get {
+                return ResourceManager.GetString("Ui_DetailWidth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 额外参数 的本地化字符串。
+        /// </summary>
+        public static string Ui_DetailWindowSuffix {
+            get {
+                return ResourceManager.GetString("Ui_DetailWindowSuffix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 所有文件|*.* 的本地化字符串。
+        /// </summary>
+        public static string Ui_FileDialogAllFiles {
+            get {
+                return ResourceManager.GetString("Ui_FileDialogAllFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 功能： 的本地化字符串。
+        /// </summary>
+        public static string Ui_FunctionLabel {
+            get {
+                return ResourceManager.GetString("Ui_FunctionLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 新配置 的本地化字符串。
+        /// </summary>
+        public static string Ui_NewConfigName {
+            get {
+                return ResourceManager.GetString("Ui_NewConfigName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 新步骤 的本地化字符串。
+        /// </summary>
+        public static string Ui_NewStepName {
+            get {
+                return ResourceManager.GetString("Ui_NewStepName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 保存并关闭 的本地化字符串。
+        /// </summary>
+        public static string Ui_SaveAndClose {
+            get {
+                return ResourceManager.GetString("Ui_SaveAndClose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 编辑脚本 的本地化字符串。
+        /// </summary>
+        public static string Ui_ScriptEditorEntry {
+            get {
+                return ResourceManager.GetString("Ui_ScriptEditorEntry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 执行: {0} 的本地化字符串。
+        /// </summary>
+        public static string Ui_SummaryExecute {
+            get {
+                return ResourceManager.GetString("Ui_SummaryExecute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 未配置执行目标 的本地化字符串。
+        /// </summary>
+        public static string Ui_SummaryNotConfiguredExecute {
+            get {
+                return ResourceManager.GetString("Ui_SummaryNotConfiguredExecute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 未配置目录 的本地化字符串。
+        /// </summary>
+        public static string Ui_SummaryNotConfiguredFolder {
+            get {
+                return ResourceManager.GetString("Ui_SummaryNotConfiguredFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 直接打开记事本 的本地化字符串。
+        /// </summary>
+        public static string Ui_SummaryNotepad {
+            get {
+                return ResourceManager.GetString("Ui_SummaryNotepad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 目录: {0} 的本地化字符串。
+        /// </summary>
+        public static string Ui_SummaryOpenFolder {
+            get {
+                return ResourceManager.GetString("Ui_SummaryOpenFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 目录: {0} | 角落: {1} 的本地化字符串。
+        /// </summary>
+        public static string Ui_SummaryOpenFolderWithCorner {
+            get {
+                return ResourceManager.GetString("Ui_SummaryOpenFolderWithCorner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 步骤: {0} 的本地化字符串。
+        /// </summary>
+        public static string Ui_SummarySteps {
+            get {
+                return ResourceManager.GetString("Ui_SummarySteps", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 退出 的本地化字符串。
+        /// </summary>
+        public static string Ui_TrayExit {
+            get {
+                return ResourceManager.GetString("Ui_TrayExit", resourceCulture);
             }
         }
     }

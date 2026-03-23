@@ -23,6 +23,7 @@ bld/
 msbuild.log
 msbuild.err
 msbuild.wrn
+.dotnet-home/
 
 # Visual Studio 2017及更高版本的本地设置目录
 .vs/

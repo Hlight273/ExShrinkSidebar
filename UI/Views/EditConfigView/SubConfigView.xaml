@@ -1,72 +1,188 @@
-﻿<UserControl x:Class="ExShrinkSidebar.UI.Views.EditConfigView.SubConfigView"
+<UserControl x:Class="ExShrinkSidebar.UI.Views.EditConfigView.SubConfigView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#183B434D"/>
+            <Setter Property="BorderBrush" Value="#334D5966"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#224A5562"/>
+                    <Setter Property="BorderBrush" Value="#55788799"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="IconToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="#183B434D"/>
+            <Setter Property="BorderBrush" Value="#334D5966"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#224A5562"/>
+                    <Setter Property="BorderBrush" Value="#55788799"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 节点行 -->
-        <Border x:Name="NodeBorder" Background="Transparent" BorderBrush="#444" BorderThickness="0,0,0,1" Padding="0,5">
+        <Border x:Name="NodeBorder"
+                Background="Transparent"
+                BorderBrush="#444"
+                BorderThickness="0,0,0,1"
+                Padding="0,6"
+                AllowDrop="True"
+                PreviewMouseLeftButtonDown="NodeBorder_PreviewMouseLeftButtonDown"
+                PreviewMouseMove="NodeBorder_PreviewMouseMove"
+                DragOver="NodeBorder_DragOver"
+                DragLeave="NodeBorder_DragLeave"
+                Drop="NodeBorder_Drop">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <!-- 缩进 -->
-                    <ColumnDefinition Width="24"/>
-                    <!-- 展开/收起 -->
-                    <ColumnDefinition Width="70"/>
-                    <!-- 类型 -->
+                    <ColumnDefinition Width="28"/>
+                    <ColumnDefinition Width="130"/>
                     <ColumnDefinition Width="*"/>
-                    <!-- 名称 -->
-                    <ColumnDefinition Width="*"/>
-                    <!-- 参数编辑 -->
-                    <ColumnDefinition Width="24"/>
-                    <!-- 添加 -->
-                    <ColumnDefinition Width="24"/>
-                    <!-- 删除 -->
+                    <ColumnDefinition Width="56"/>
+                    <ColumnDefinition Width="28"/>
+                    <ColumnDefinition Width="28"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- 缩进 -->
                 <Border x:Name="IndentPad" Grid.Column="0"/>
 
-                <!-- 展开/收起 -->
-                <ToggleButton x:Name="ExpandBtn" Grid.Column="1" Content="+" FontSize="10" 
-                              Visibility="Collapsed" Click="ExpandBtn_Click"/>
+                <ToggleButton x:Name="ExpandBtn"
+                              Grid.Column="1"
+                              Width="24"
+                              Height="24"
+                              VerticalAlignment="Top"
+                              Visibility="Collapsed"
+                              Style="{StaticResource IconToggleStyle}"
+                              Click="ExpandBtn_Click">
+                    <Rectangle x:Name="ExpandIconMask" Width="14" Height="14" Fill="#FFADB6C2">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="/Asset/Resource/Icons/pandown.png" Stretch="Uniform"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                </ToggleButton>
 
-                <!-- 类型 -->
-                <ComboBox x:Name="TypeComboBox" Grid.Column="2" FontSize="12" 
+                <ComboBox x:Name="TypeComboBox"
+                          Grid.Column="2"
+                          Margin="4,0"
+                          VerticalAlignment="Top"
+                          FontSize="12"
                           SelectionChanged="TypeComboBox_SelectionChanged"/>
 
-                <!-- 名称 -->
-                <TextBox x:Name="NameTextBox" Grid.Column="3" Margin="2,0" VerticalAlignment="Center" 
-                         Background="#333" Foreground="White" BorderThickness="0" 
-                         TextChanged="NameTextBox_TextChanged"/>
-
-                <!-- 参数编辑区 -->
-                <Grid Grid.Column="4" x:Name="EditArea" Margin="5,0">
-                    <!-- 脚本 -->
-                    <TextBox x:Name="ScriptBox" Visibility="Collapsed" VerticalAlignment="Center" 
-                             Background="#333" Foreground="White" BorderThickness="0"
-                             TextChanged="ScriptBox_TextChanged"/>
-                    <!-- 路径 -->
-                    <DockPanel x:Name="PathPanel" Visibility="Collapsed">
-                        <Button Content="..." Width="20" DockPanel.Dock="Right" Click="BrowsePath_Click"/>
-                        <TextBox x:Name="PathBox" VerticalAlignment="Center" 
-                                 Background="#333" Foreground="White" BorderThickness="0"
-                                 TextChanged="PathBox_TextChanged"/>
+                <StackPanel Grid.Column="3" Margin="4,0,8,0">
+                    <DockPanel LastChildFill="True">
+                        <TextBlock x:Name="ConfigNameLabelText"
+                                   Margin="0,0,6,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="#FF9CA7B4"
+                                   FontSize="11"/>
+                        <TextBox x:Name="NameTextBox"
+                                 MinWidth="180"
+                                 VerticalAlignment="Center"
+                                 Background="#333"
+                                 Foreground="White"
+                                 BorderThickness="0"
+                                 Padding="8,6"
+                                 TextChanged="NameTextBox_TextChanged"/>
                     </DockPanel>
-                </Grid>
 
-                <!-- 添加子节点 (仅 Combine 类型有效，可在 CodeBehind 控制 Visibility) -->
-                <Button Grid.Column="5" Content="+" Width="20" FontSize="12" Click="AddChildBtn_Click"/>
+                    <DockPanel LastChildFill="True" Margin="0,6,0,0">
+                        <TextBlock x:Name="FunctionLabelText"
+                                   Margin="0,0,6,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="#FF9CA7B4"
+                                   FontSize="11"/>
+                        <TextBlock x:Name="SummaryText"
+                                   VerticalAlignment="Center"
+                                   Foreground="#FFB5B5B5"
+                                   FontSize="11"
+                                   TextTrimming="CharacterEllipsis"/>
+                    </DockPanel>
+                </StackPanel>
 
-                <!-- 删除 -->
-                <Button Grid.Column="6" Content="X" Width="20" FontSize="10" Click="DeleteBtn_Click"/>
+                <Button x:Name="MoreParamsBtn"
+                        Grid.Column="4"
+                        Width="56"
+                        Height="24"
+                        VerticalAlignment="Top"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="MoreParamsBtn_Click">
+                    <Rectangle Width="14" Height="14" Fill="#FFADB6C2">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="/Asset/Resource/Icons/more.png" Stretch="Uniform"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                </Button>
+
+                <Button x:Name="AddChildBtn"
+                        Grid.Column="5"
+                        Width="24"
+                        Height="24"
+                        VerticalAlignment="Top"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="AddChildBtn_Click">
+                    <Rectangle Width="14" Height="14" Fill="#FFADB6C2">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="/Asset/Resource/Icons/add.png" Stretch="Uniform"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                </Button>
+
+                <Button Grid.Column="6"
+                        Width="24"
+                        Height="24"
+                        VerticalAlignment="Top"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="DeleteBtn_Click">
+                    <Rectangle Width="14" Height="14" Fill="#FFADB6C2">
+                        <Rectangle.OpacityMask>
+                            <ImageBrush ImageSource="/Asset/Resource/Icons/delete.png" Stretch="Uniform"/>
+                        </Rectangle.OpacityMask>
+                    </Rectangle>
+                </Button>
             </Grid>
         </Border>
 
-        <!-- 子节点容器 -->
         <StackPanel x:Name="ChildrenContainer" Grid.Row="1" Visibility="Collapsed"/>
     </Grid>
 </UserControl>

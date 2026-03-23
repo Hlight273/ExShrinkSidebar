@@ -120,10 +120,109 @@
   <data name="ExConfigType_OpenFolder" xml:space="preserve">
     <value>Open Folder</value>
   </data>
+  <data name="ExConfigType_Combine" xml:space="preserve">
+    <value>Combined Action</value>
+  </data>
   <data name="ExConfigType_Cmd" xml:space="preserve">
     <value>Excute Batch</value>
   </data>
+  <data name="ExConfigType_Execute" xml:space="preserve">
+    <value>Execute</value>
+  </data>
   <data name="ExConfigType_Notepad" xml:space="preserve">
     <value>Notepad</value>
+  </data>
+  <data name="Ui_ConfigEditorTitle" xml:space="preserve">
+    <value>Script Config Editor</value>
+  </data>
+  <data name="Ui_NewConfigName" xml:space="preserve">
+    <value>New Config</value>
+  </data>
+  <data name="Ui_NewStepName" xml:space="preserve">
+    <value>New Step</value>
+  </data>
+  <data name="Ui_ConfigNameLabel" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="Ui_FunctionLabel" xml:space="preserve">
+    <value>Function:</value>
+  </data>
+  <data name="Ui_SummarySteps" xml:space="preserve">
+    <value>Steps: {0}</value>
+  </data>
+  <data name="Ui_SummaryOpenFolder" xml:space="preserve">
+    <value>Folder: {0}</value>
+  </data>
+  <data name="Ui_SummaryOpenFolderWithCorner" xml:space="preserve">
+    <value>Folder: {0} | Corner: {1}</value>
+  </data>
+  <data name="Ui_SummaryExecute" xml:space="preserve">
+    <value>Execute: {0}</value>
+  </data>
+  <data name="Ui_SummaryNotConfiguredFolder" xml:space="preserve">
+    <value>Folder is not configured</value>
+  </data>
+  <data name="Ui_SummaryNotConfiguredExecute" xml:space="preserve">
+    <value>Execution target is not configured</value>
+  </data>
+  <data name="Ui_SummaryNotepad" xml:space="preserve">
+    <value>Open Notepad directly</value>
+  </data>
+  <data name="Ui_AddRootTooltip" xml:space="preserve">
+    <value>Add root config</value>
+  </data>
+  <data name="Ui_SaveAndClose" xml:space="preserve">
+    <value>Save and Close</value>
+  </data>
+  <data name="Ui_DetailWindowSuffix" xml:space="preserve">
+    <value>Additional Parameters</value>
+  </data>
+  <data name="Ui_DetailFolderPath" xml:space="preserve">
+    <value>Folder Path</value>
+  </data>
+  <data name="Ui_DetailExecuteTarget" xml:space="preserve">
+    <value>Execution Target</value>
+  </data>
+  <data name="Ui_DetailEnablePlacement" xml:space="preserve">
+    <value>Move folder window to a screen corner after opening</value>
+  </data>
+  <data name="Ui_DetailBrowse" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="Ui_DetailArguments" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="Ui_DetailCorner" xml:space="preserve">
+    <value>Corner</value>
+  </data>
+  <data name="Ui_DetailWidth" xml:space="preserve">
+    <value>Width</value>
+  </data>
+  <data name="Ui_DetailHeight" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="Ui_DetailCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Ui_DetailConfirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="Ui_DetailHintOpenFolder" xml:space="preserve">
+    <value>Configure the folder path, then optionally reposition the folder window to a screen corner with a custom size. If width and height are empty, half of the current screen is used.</value>
+  </data>
+  <data name="Ui_DetailHintExecute" xml:space="preserve">
+    <value>Execute opens the target path directly and passes the argument string to the system unchanged. Suitable for exe, bat, cmd, ps1, or other associated files.</value>
+  </data>
+  <data name="Ui_DetailHintNone" xml:space="preserve">
+    <value>This action type has no additional parameters.</value>
+  </data>
+  <data name="Ui_FileDialogAllFiles" xml:space="preserve">
+    <value>All Files|*.*</value>
+  </data>
+  <data name="Ui_TrayExit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Ui_ScriptEditorEntry" xml:space="preserve">
+    <value>Edit Script</value>
   </data>
 </root>

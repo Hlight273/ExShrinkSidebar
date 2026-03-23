@@ -26,6 +26,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
         protected override void RegisterEvents()
         {
             EVENT.on<DockModelArg>(EventIds.ON_DOCK_MODEL_CHANGED, (sender, e) => updateView(e.oldModel,e.newModel));
+            EVENT.on<ConfigSavedEventArg>(EventIds.ON_CONFIG_SAVED, (sender, e) => refreshButtons());
         }
 
         void Init(object sender, RoutedEventArgs e)

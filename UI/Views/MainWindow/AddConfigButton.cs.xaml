@@ -20,7 +20,7 @@
                    Margin="0,0,0,4" Source="/Asset/Resource/Icons/addConfig.png"/>
 
             <TextBlock x:Name="IconText"
-                       Text="添加配置"
+                       Text=""
                        FontSize="12"
                        TextAlignment="Center"
                        Foreground="White"

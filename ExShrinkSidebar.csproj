@@ -16,6 +16,11 @@
   <ItemGroup>
     <None Remove="Asset\Resource\config.json" />
     <None Remove="Asset\Resource\Icons\addConfig.png" />
+    <None Remove="Asset\Resource\Icons\add.png" />
+    <None Remove="Asset\Resource\Icons\delete.png" />
+    <None Remove="Asset\Resource\Icons\more.png" />
+    <None Remove="Asset\Resource\Icons\pandown.png" />
+    <None Remove="Asset\Resource\Icons\panend.png" />
     <None Remove="Asset\Resource\Icons\terminal.ico" />
     <None Remove="Asset\Texture\Common\arrow.png" />
   </ItemGroup>
@@ -28,6 +33,11 @@
 
   <ItemGroup>
     <Resource Include="Asset\Resource\Icons\addConfig.png" />
+    <Resource Include="Asset\Resource\Icons\add.png" />
+    <Resource Include="Asset\Resource\Icons\delete.png" />
+    <Resource Include="Asset\Resource\Icons\more.png" />
+    <Resource Include="Asset\Resource\Icons\pandown.png" />
+    <Resource Include="Asset\Resource\Icons\panend.png" />
     <Resource Include="Asset\Texture\Common\arrow.png" />
   </ItemGroup>
 
