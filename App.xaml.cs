@@ -47,7 +47,7 @@ namespace ExShrinkSidebar
             {
                 Visible = true,
                 Text = "ExShrinkSidebar",
-                Icon = new Icon(ResHelper.GetPath("terminal.ico", "Asset/Resource/Icons"))
+                Icon = new Icon(ResHelper.GetPath("exicon256.ico"))
             };
             RebuildTrayMenu();
         }

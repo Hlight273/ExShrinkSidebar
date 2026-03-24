@@ -22,8 +22,11 @@
     <None Remove="Asset\Resource\config.json" />
     <None Remove="Asset\Resource\Icons\addConfig.png" />
     <None Remove="Asset\Resource\Icons\add.png" />
+    <None Remove="Asset\Resource\Icons\combine.ico" />
     <None Remove="Asset\Resource\Icons\delete.png" />
+    <None Remove="Asset\Resource\Icons\folder.ico" />
     <None Remove="Asset\Resource\Icons\more.png" />
+    <None Remove="Asset\Resource\Icons\notepad.ico" />
     <None Remove="Asset\Resource\Icons\pandown.png" />
     <None Remove="Asset\Resource\Icons\panend.png" />
     <None Remove="Asset\Resource\Icons\terminal.ico" />
@@ -43,19 +46,35 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Asset\Resource\Icons\terminal.ico">
+    <Content Include="Asset\Resource\ButtonIcons\default.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="exicon256.ico" />
+    <Content Include="Asset\Resource\ButtonIcons\terminal.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="exicon256.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Asset\Resource\Icons\addConfig.png" />
     <Resource Include="Asset\Resource\Icons\add.png" />
+    <Content Include="Asset\Resource\ButtonIcons\combine.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="Asset\Resource\Icons\delete.png" />
+    <Content Include="Asset\Resource\ButtonIcons\folder.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="Asset\Resource\Icons\more.png" />
+    <Content Include="Asset\Resource\ButtonIcons\notepad.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Resource Include="Asset\Resource\Icons\pandown.png" />
-    <Resource Include="Asset\Resource\Icons\panend.png" />
+    <Resource Include="Asset\Resource\Icons\panend.png">
+      <CopyToOutputDirectory></CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Asset\Texture\Common\arrow.png" />
   </ItemGroup>
 

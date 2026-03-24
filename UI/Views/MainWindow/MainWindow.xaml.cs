@@ -78,10 +78,6 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
             for (int i = 0; i < targetCount; i++)
             {
                 var b = config.buttons[i];
-                if (string.IsNullOrEmpty(b.icon))
-                {
-                    b.icon = ResHelper.GetPath("Asset/Resource/Icons/terminal.ico");
-                }
                 if (i < currentCount)
                 {
                     if (ButtonPanel.Children[i] is IconButton existingBtn)

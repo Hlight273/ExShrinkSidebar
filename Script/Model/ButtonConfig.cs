@@ -64,6 +64,7 @@ namespace ExShrinkSidebar.Script.Model
             { ExConfigType.OpenFolder, "folder.ico" },
             { ExConfigType.Execute, "terminal.ico" },
             { ExConfigType.Notepad, "notepad.ico" },
+            { ExConfigType.Combine, "combine.ico" }
         };
     }
 }

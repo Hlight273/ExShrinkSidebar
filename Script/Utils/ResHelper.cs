@@ -12,7 +12,7 @@ namespace ExShrinkSidebar.Script.Utils
         public static readonly string BaseDir =
             AppDomain.CurrentDomain.BaseDirectory;
 
-        private const string IconFolderPrefix = "Asset/Resource/Icons";
+        private const string ButtonIconFolderPrefix = "Asset/Resource/ButtonIcons";
 
         /// <summary>
         /// 获取资源绝对路径
@@ -48,9 +48,9 @@ namespace ExShrinkSidebar.Script.Utils
                 return GetPath(cfg.icon);
 
             if (ButtonConfigDefine.TypeIconMap.TryGetValue(cfg.configType, out string iconFileName))
-                return GetPath(iconFileName, IconFolderPrefix);
+                return GetPath(iconFileName, ButtonIconFolderPrefix);
 
-            return GetPath("default.ico", IconFolderPrefix);
+            return GetPath("default.ico", ButtonIconFolderPrefix);
         }
 
         /// <summary>
