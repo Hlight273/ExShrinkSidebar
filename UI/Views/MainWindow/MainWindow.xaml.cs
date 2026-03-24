@@ -17,7 +17,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
 {
     public partial class MainWindow : WindowBase
     {
-        DockManager dock;
+        private DockManager? dock;
 
         public MainWindow()
         {
@@ -36,6 +36,13 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
             dock = new DockManager(this);
             DockState.SetEdge(DockEdge.Top);
             updateView(null, DockState.Model);
+        }
+
+        protected override void Cleanup()
+        {
+            dock?.Cleanup();
+            dock = null;
+            base.Cleanup();
         }
 
         async void updateView(DockModel oldModel, DockModel newModel)

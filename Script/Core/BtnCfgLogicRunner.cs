@@ -1,24 +1,39 @@
 using ExShrinkSidebar.Script.Model;
 using ExShrinkSidebar.Script.Utils;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace ExShrinkSidebar.Script.Core
 {
     public static class BtnCfgLogicRunner
     {
+        /// <summary>
+        /// 执行配置逻辑（入口）
+        /// </summary>
         public static void Run(ButtonConfig cfg)
         {
-            if (cfg == null)
-            {
-                return;
-            }
+            if (cfg == null) return;
 
-            var steps = ExpandExecutionSteps(cfg);
-            foreach (var step in steps)
+            // 【关键修复】使用 Task.Run 在后台线程执行整个逻辑链
+            // 这样即使内部有 .GetAwaiter().GetResult() 或耗时操作，也不会阻塞 UI 线程
+            Task.Run(() => ExecuteInternal(cfg));
+        }
+
+        private static void ExecuteInternal(ButtonConfig cfg)
+        {
+            try
             {
-                DoLogic(step);
+                var steps = ExpandExecutionSteps(cfg);
+                foreach (var step in steps)
+                {
+                    DoLogic(step);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ExecuteInternal Error: {ex.Message}");
             }
         }
 
@@ -31,26 +46,17 @@ namespace ExShrinkSidebar.Script.Core
 
         private static void AppendSteps(ButtonConfig cfg, List<ButtonConfig> result)
         {
-            if (cfg == null)
-            {
-                return;
-            }
+            if (cfg == null) return;
 
             if (cfg.configType == ExConfigType.Combine)
             {
-                if (cfg.logicChain == null)
+                if (cfg.logicChain == null) return;
+                foreach (var child in cfg.logicChain)
                 {
-                    return;
+                    AppendSteps(child, result);
                 }
-
-                for (int i = 0; i < cfg.logicChain.Count; i++)
-                {
-                    AppendSteps(cfg.logicChain[i], result);
-                }
-
                 return;
             }
-
             result.Add(cfg);
         }
 
@@ -65,35 +71,29 @@ namespace ExShrinkSidebar.Script.Core
                 case ExConfigType.Execute:
                     return ExecuteTarget(cfg.arg);
             }
-
             return true;
         }
 
         private static bool OpenFolder(ButtonConfigNodeArg arg)
         {
             var path = arg?.path ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return false;
-            }
+            if (string.IsNullOrWhiteSpace(path)) return false;
 
-            var success = StartShellTarget("explorer.exe", QuoteArgument(path));
-            if (success && arg?.windowCorner != null)
+            var config = arg?.windowCorner != null ? new ExplorerWindowConfig
             {
-                _ = Task.Run(async () => await TryRepositionExplorerWindowAsync(arg));
-            }
+                Width = arg.windowWidth,
+                Height = arg.windowHeight,
+                Corner = arg.windowCorner.Value
+            } : null;
 
-            return success;
+            // 此时因为在后台线程，同步等待是安全的
+            return ExplorerWindowHelper.OpenFolderWithConfigAsync(path, config).GetAwaiter().GetResult();
         }
 
         private static bool ExecuteTarget(ButtonConfigNodeArg arg)
         {
             var target = arg?.path ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(target))
-            {
-                return false;
-            }
-
+            if (string.IsNullOrWhiteSpace(target)) return false;
             return StartShellTarget(target, arg?.arguments ?? string.Empty);
         }
 
@@ -114,93 +114,6 @@ namespace ExShrinkSidebar.Script.Core
                 Debug.WriteLine("StartShellTarget " + ex.Message);
                 return false;
             }
-        }
-
-        private static async Task TryRepositionExplorerWindowAsync(ButtonConfigNodeArg arg)
-        {
-            for (int i = 0; i < 20; i++)
-            {
-                await Task.Delay(250);
-                var hwnd = GetForegroundWindow();
-                if (hwnd == IntPtr.Zero || !IsExplorerWindow(hwnd))
-                {
-                    continue;
-                }
-
-                if (!GetWindowRect(hwnd, out RECT currentRect))
-                {
-                    continue;
-                }
-
-                var bounds = ScreenHelper.GetBounds(0);
-                var targetWidth = arg.windowWidth > 0 ? arg.windowWidth : bounds.Width / 2;
-                var targetHeight = arg.windowHeight > 0 ? arg.windowHeight : bounds.Height / 2;
-
-                targetWidth = Math.Min(targetWidth, bounds.Width);
-                targetHeight = Math.Min(targetHeight, bounds.Height);
-
-                var targetLeft = bounds.Left;
-                var targetTop = bounds.Top;
-
-                switch (arg.windowCorner)
-                {
-                    case ExWindowCorner.TopRight:
-                        targetLeft = bounds.Right - targetWidth;
-                        break;
-                    case ExWindowCorner.BottomLeft:
-                        targetTop = bounds.Bottom - targetHeight;
-                        break;
-                    case ExWindowCorner.BottomRight:
-                        targetLeft = bounds.Right - targetWidth;
-                        targetTop = bounds.Bottom - targetHeight;
-                        break;
-                }
-
-                SetWindowPos(hwnd, IntPtr.Zero, targetLeft, targetTop, targetWidth, targetHeight, SWP_NOZORDER | SWP_SHOWWINDOW);
-                return;
-            }
-        }
-
-        private static bool IsExplorerWindow(IntPtr hwnd)
-        {
-            var className = new StringBuilder(256);
-            GetClassName(hwnd, className, className.Capacity);
-            var windowClass = className.ToString();
-            return string.Equals(windowClass, "CabinetWClass", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(windowClass, "ExploreWClass", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string QuoteArgument(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return string.Empty;
-            }
-
-            return "\"" + value.Trim().Replace("\"", "\\\"") + "\"";
-        }
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
-        private const uint SWP_NOZORDER = 0x0004;
-        private const uint SWP_SHOWWINDOW = 0x0040;
-
-        private struct RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
         }
     }
 }

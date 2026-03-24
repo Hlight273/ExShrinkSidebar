@@ -40,11 +40,21 @@ public static class HookManager
 
             int x = data.pt.X;
             int y = data.pt.Y;
-
-            System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+            var app = System.Windows.Application.Current;
+            var dispatcher = app?.Dispatcher;
+            if (hookId != IntPtr.Zero &&
+                dispatcher != null &&
+                !dispatcher.HasShutdownStarted &&
+                !dispatcher.HasShutdownFinished)
             {
-                MouseMoved?.Invoke(x, y);
-            });
+                dispatcher.BeginInvoke(() =>
+                {
+                    if (hookId != IntPtr.Zero)
+                    {
+                        MouseMoved?.Invoke(x, y);
+                    }
+                });
+            }
         }
 
         return CallNextHookEx(hookId, nCode, wParam, lParam);
