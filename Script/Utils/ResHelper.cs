@@ -56,7 +56,12 @@ namespace ExShrinkSidebar.Script.Utils
         /// <summary>
         /// 按钮配置路径
         /// </summary>
-        public static string GetButtonConfigPath() => GetPath("Asset/Resource/Config/config.json");
-        
+        public static string GetButtonConfigPath() {
+            string roamingAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            return GetPath(roamingAppData + "/ExShrinkBar/Config/config.json");
+        }
+
+        public static string GetButtonConfigPathOld() => GetPath("Asset/Resource/Config/config.json");
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using ExShrinkSidebar.Script.Core;
+using ExShrinkSidebar.Script.Extensions;
 using ExShrinkSidebar.Script.Model;
 using ExShrinkSidebar.Script.Utils;
 using System.Windows;
@@ -21,7 +22,8 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
         public void SetData(ButtonConfig cfg)
         {
             _cfg = cfg;
-            IconText.Text = cfg.name;
+            IconText.Text = cfg.name.TruncateWithEllipsis(8);
+            IconText.ToolTip = cfg.name;
             IconImage.Source = new BitmapImage(new Uri( ResHelper.GetExConfigTypeIconPath(cfg)));
         }
 

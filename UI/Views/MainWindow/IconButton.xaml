@@ -20,12 +20,14 @@
                    Margin="0,0,0,4"/>
 
             <TextBlock x:Name="IconText"
-                       Text="App"
-                       FontSize="12"
+                       Text="app"
+                       FontSize="10"
                        TextAlignment="Center"
                        Foreground="White"
                        TextWrapping="Wrap"
-                       HorizontalAlignment="Center"/>
+                       HorizontalAlignment="Center" 
+                       LineHeight="12"
+                       VerticalAlignment="Center"/>
 
         </StackPanel>
 
