@@ -17,7 +17,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
 {
     public partial class MainWindow : WindowBase
     {
-        private DockManager? dock;
+        private DockManager? dockMgr;
 
         public MainWindow()
         {
@@ -33,31 +33,28 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
 
         void Init(object sender, RoutedEventArgs e)
         {
-            dock = new DockManager(this);
+            dockMgr = new DockManager(this);
             DockState.SetEdge(DockEdge.Top);
             updateView(null, DockState.Model);
         }
 
         protected override void Cleanup()
         {
-            dock?.Cleanup();
-            dock = null;
+            dockMgr?.Cleanup();
+            dockMgr = null;
             base.Cleanup();
         }
 
         async void updateView(DockModel oldModel, DockModel newModel)
         {
             bool edgeChanged = oldModel?.edge != newModel?.edge;
-            if (edgeChanged) {
-                Debug.WriteLine("Edge changed");
-                this.Opacity = 0;
-                dock.updateEdgePosition();
+            bool screenIndexChanged = oldModel?.screenIndex != newModel?.screenIndex;
+            if (edgeChanged|| screenIndexChanged) {
+                Debug.WriteLine("Edge or index changed");
+                dockMgr?.updateEdgePosition();
             }
             SetupDragBar();
             refreshButtons();
-            this.Opacity = 1;
-
-
         }
 
         void refreshButtons()
@@ -150,7 +147,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
             isDragging = true;
 
             // 暂停Dock逻辑
-            dock?.Pause();
+            dockMgr?.Pause();
 
             var cursorPos = Forms.Control.MousePosition;
             startMouseScreen = PixelsToDip(cursorPos);
@@ -215,7 +212,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
 
             Mouse.Capture(null);
 
-            dock?.Resume();
+            dockMgr?.Resume();
         }
 
         #endregion

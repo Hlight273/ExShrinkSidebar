@@ -1,6 +1,7 @@
-using ExShrinkSidebar.Script.Core.Event;
+using ExShrinkSidebar.Script.Core;
 using ExShrinkSidebar.Script.Localization;
 using ExShrinkSidebar.Script.Utils;
+using ExShrinkSidebar.UI.Views.ContextMenu;
 using ExShrinkSidebar.UI.Views.MainWindow;
 using System;
 using System.Drawing;
@@ -14,6 +15,7 @@ namespace ExShrinkSidebar
     public partial class App : Application
     {
         private Forms.NotifyIcon _notifyIcon;
+        private ContextMenuManager _trayMenuManager;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -26,7 +28,9 @@ namespace ExShrinkSidebar
 
             var mainWindow = new MainWindow();
             MainWindow = mainWindow;
+
             SetupNotifyIcon();
+
             mainWindow.Show();
         }
 
@@ -37,10 +41,10 @@ namespace ExShrinkSidebar
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();
             }
-
             base.OnExit(e);
         }
 
+        //³õÊ¼»¯ÍÐÅÌÍ¼±ê
         private void SetupNotifyIcon()
         {
             _notifyIcon = new Forms.NotifyIcon
@@ -49,40 +53,8 @@ namespace ExShrinkSidebar
                 Text = "ExShrinkSidebar",
                 Icon = new Icon(ResHelper.GetPath("exicon256.ico"))
             };
-            RebuildTrayMenu();
-        }
 
-        private void RebuildTrayMenu()
-        {
-            var menu = new Forms.ContextMenuStrip();
-            var languageMenu = new Forms.ToolStripMenuItem(UiTextCatalog.Get(UiTextCatalog.TrayLanguageMenu));
-
-            var zhItem = CreateLanguageMenuItem("zh-CN", UiTextCatalog.Get(UiTextCatalog.LanguageZhCn));
-            var enItem = CreateLanguageMenuItem("en-US", UiTextCatalog.Get(UiTextCatalog.LanguageEnUs));
-
-            languageMenu.DropDownItems.Add(zhItem);
-            languageMenu.DropDownItems.Add(enItem);
-            menu.Items.Add(languageMenu);
-            menu.Items.Add(new Forms.ToolStripSeparator());
-            var exitItem = new Forms.ToolStripMenuItem(UiTextCatalog.Get(UiTextCatalog.TrayExit));
-            exitItem.Click += (_, __) => Shutdown();
-            menu.Items.Add(exitItem);
-            _notifyIcon.ContextMenuStrip = menu;
-        }
-
-        private Forms.ToolStripMenuItem CreateLanguageMenuItem(string cultureName, string text)
-        {
-            var menuItem = new Forms.ToolStripMenuItem(text)
-            {
-                Checked = string.Equals(Asset.Properties.StringResources.Culture?.Name ?? CultureInfo.CurrentUICulture.Name, cultureName, StringComparison.OrdinalIgnoreCase)
-            };
-            menuItem.Click += (_, __) =>
-            {
-                LocalizationHelper.ApplyCulture(cultureName);
-                RebuildTrayMenu();
-                EVENT.emit(EventIds.ON_LANGUAGE_CHANGED, this, new LanguageChangedEventArg { CultureName = cultureName });
-            };
-            return menuItem;
+            _trayMenuManager = new ContextMenuManager(_notifyIcon);
         }
     }
 }
