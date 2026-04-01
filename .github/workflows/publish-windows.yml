@@ -3,8 +3,8 @@ name: Build and Release WPF App
 on:
   push:
     tags:
-      - "v*" #当推送 v 开头的标签时触发(如 v1.0.0)
-  workflow_dispatch: #手动触发按钮
+      - "v*" 
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -14,24 +14,32 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      # 设置 .NET SDK
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
 
+      # 设置 MSBuild
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      # 还原依赖
       - name: Restore dependencies
         run: dotnet restore ExShrinkSidebar.sln
 
+      # 使用 MSBuild 发布
       - name: Publish single-file EXE
         run: |
-          dotnet publish ExShrinkSidebar.sln `
-            --configuration Release `
-            --runtime win-x64 `
-            --self-contained true `
+          msbuild ExShrinkSidebar.sln `
+            /p:Configuration=Release `
+            /p:RuntimeIdentifier=win-x64 `
+            /p:SelfContained=true `
             /p:PublishSingleFile=true `
             /p:PublishTrimmed=false `
             /p:IncludeNativeLibrariesForSelfExtract=true `
-            /p:IncludeAllContentForSelfExtract=true
+            /p:IncludeAllContentForSelfExtract=true `
+            /t:Publish
 
       - name: Zip published output
         run: |
@@ -45,19 +53,17 @@ jobs:
           }
           Compress-Archive -Path "$publishDir/*" -DestinationPath $zipPath -Force
 
-      #artifact 方便调试查看日志
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ExShrinkSidebar-Windows
           path: artifacts/ExShrinkSidebar-Windows.zip
 
-      #发布到 Releases
       - name: Release to GitHub
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/') #只有打标签时才发布
+        if: startsWith(github.ref, 'refs/tags/')
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} #无需手动配置，自动提供
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: artifacts/ExShrinkSidebar-Windows.zip
           draft: false
