@@ -27,7 +27,19 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Width="100" Height="100">
+    <Grid Width="100" Height="100" HorizontalAlignment="Left">
+
+        <!-- 中心装饰圆点 -->
+        <Ellipse Width="80" Height="80" 
+          Fill="#FF313131" 
+          Stroke="#FF4E4E4E" 
+          StrokeThickness="1.5" 
+          Opacity="0.8"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center">
+            <Ellipse.ToolTip>中心点</Ellipse.ToolTip>
+        </Ellipse>
+        
         <!-- 上箭头 -->
         <Button x:Name="TopBtn" 
                 Width="30" Height="30" 
@@ -150,15 +162,6 @@
             </Image>
         </Button>
 
-        <!-- 中心装饰圆点（可选） -->
-        <Ellipse Width="20" Height="20" 
-                 Fill="#FF688BC3" 
-                 Stroke="#FF2D3065" 
-                 StrokeThickness="1.5" 
-                 Opacity="0.8"
-                 HorizontalAlignment="Center"
-                 VerticalAlignment="Center">
-            <Ellipse.ToolTip>中心点</Ellipse.ToolTip>
-        </Ellipse>
+       
     </Grid>
 </UserControl>

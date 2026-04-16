@@ -1,4 +1,6 @@
-﻿public struct MouseEdgeDistance
+﻿using Orientation = System.Windows.Controls.Orientation;
+
+public struct MouseEdgeDistance
 {
     public int Top;
     public int Bottom;
@@ -82,11 +84,11 @@ namespace ExShrinkSidebar.Script.Utils
         /// <summary>
         /// 获取主布局方向
         /// </summary>
-        public static System.Windows.Controls.Orientation getMainLayoutOrientation(DockEdge edgeType)
+        public static Orientation getMainLayoutOrientation(DockEdge edgeType)
         {
             if(edgeType==DockEdge.Left||edgeType==DockEdge.Right)
-                return System.Windows.Controls.Orientation.Vertical;
-            return System.Windows.Controls.Orientation.Horizontal;
+                return Orientation.Vertical;
+            return Orientation.Horizontal;
         }
 
         /// <summary>

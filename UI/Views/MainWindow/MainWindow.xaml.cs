@@ -3,15 +3,12 @@ using ExShrinkSidebar.Script.Core.Event;
 using ExShrinkSidebar.Script.Model;
 using ExShrinkSidebar.Script.Utils;
 using ExShrinkSidebar.UI.ViewModels.Common;
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Forms = System.Windows.Forms;
+using HorizontalAlignment = System.Windows.HorizontalAlignment;
 
 namespace ExShrinkSidebar.UI.Views.MainWindow
 {
@@ -27,7 +24,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
 
         protected override void RegisterEvents()
         {
-            EVENT.on<DockModelArg>(EventIds.ON_DOCK_MODEL_CHANGED, (sender, e) => updateView(e.oldModel,e.newModel));
+            EVENT.on<DockModelArg>(EventIds.ON_DOCK_MODEL_CHANGED, (sender, e) => updateView(e.oldModel, e.newModel));
             EVENT.on<ConfigSavedEventArg>(EventIds.ON_CONFIG_SAVED, (sender, e) => refreshButtons());
         }
 
@@ -49,9 +46,11 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
         {
             bool edgeChanged = oldModel?.edge != newModel?.edge;
             bool screenIndexChanged = oldModel?.screenIndex != newModel?.screenIndex;
-            if (edgeChanged|| screenIndexChanged) {
+            if ((edgeChanged || screenIndexChanged) && newModel != null)
+            {
                 Debug.WriteLine("Edge or index changed");
                 dockMgr?.updateEdgePosition();
+                this.updateDockPositionToggleView(newModel.edge);
             }
             SetupDragBar();
             refreshButtons();
@@ -93,7 +92,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
             }
             var orientation = ScreenHelper.getMainLayoutOrientation(DockState.CurrentEdge);
             ButtonPanel.Orientation = InnerPanel.Orientation = orientation;
-            
+
         }
 
         #region Drag Logic
@@ -246,5 +245,25 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
             }
         }
         #endregion
+
+
+        private readonly Dictionary<DockEdge, (HorizontalAlignment Horiz, VerticalAlignment Vert)> toggleButtonAlignMap
+            = new Dictionary<DockEdge, (HorizontalAlignment Horiz, VerticalAlignment Vert)>()
+        {
+            { DockEdge.Top, (HorizontalAlignment.Right, VerticalAlignment.Center) },
+            { DockEdge.Left, (HorizontalAlignment.Center, VerticalAlignment.Bottom) },
+            { DockEdge.Right, (HorizontalAlignment.Center, VerticalAlignment.Bottom) },
+            { DockEdge.Bottom, (HorizontalAlignment.Right, VerticalAlignment.Center) }
+        };
+
+        private void updateDockPositionToggleView(DockEdge edge)
+        {
+            if (toggleButtonAlignMap.TryGetValue(edge, out var align))
+            {
+                dockPositionToggle.HorizontalAlignment = align.Horiz;
+                dockPositionToggle.VerticalAlignment = align.Vert;
+            }
+
+        }
     }
 }
