@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Threading;
 using ExShrinkSidebar.Script.Core;
 using ExShrinkSidebar.Script.Utils;
@@ -35,6 +34,9 @@ public class DockManager
     private DockVisibilityState visibilityState = DockVisibilityState.Hidden;
 
     private const double ANIMATION_FACTOR = 0.2; // 调大一点，响应更快
+    private const double DOCK_THICKNESS_DIP = 150;
+    private const double HIDE_PADDING_DIP = 20;
+    private const double EDGE_TRIGGER_DIP = 2;
 
     public DockManager(Window w)
     {
@@ -112,62 +114,86 @@ public class DockManager
 
     private double HiddenOffset
     {
-        // 使用缓存尺寸，避免在鼠标 Hook 高频触发时读取 WPF 属性
+        // 缓存尺寸使用物理像素，与鼠标 Hook 和 Screen.Bounds 保持同一坐标系。
         get => (DockState.curDockOrientation == DockOrientation.Vertical) ? cachedWidth : cachedHeight;
     }
 
-    private Matrix TransformFromDevice
+    private double CurrentScreenScale => GetScreenScale(ScreenHelper.GetBounds(DockState.CurrentScreenIndex));
+
+    private static double GetScreenScale(System.Drawing.Rectangle bounds)
     {
-        get
+        try
         {
-            var source = PresentationSource.FromVisual(window);
-            return source?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
+            var monitor = MonitorFromPoint(new POINT
+            {
+                X = bounds.Left + bounds.Width / 2,
+                Y = bounds.Top + bounds.Height / 2
+            }, MONITOR_DEFAULTTONEAREST);
+
+            if (monitor != IntPtr.Zero && GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, out var dpiX, out _) == 0)
+            {
+                return dpiX / 96d;
+            }
         }
+        catch (DllNotFoundException)
+        {
+            // Windows 8.0 及以下没有 Shcore.dll，按 100% 缩放回退。
+        }
+
+        return 1d;
     }
 
-    private Matrix TransformToDevice
+    private RECT GetWindowBounds()
     {
-        get
-        {
-            var source = PresentationSource.FromVisual(window);
-            return source?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
-        }
-    }
-
-    private System.Windows.Point PixelsToDip(double x, double y) => TransformFromDevice.Transform(new System.Windows.Point(x, y));
-
-    private Rect ScreenBoundsToDip(System.Drawing.Rectangle bounds)
-    {
-        var topLeft = PixelsToDip(bounds.Left, bounds.Top);
-        var bottomRight = PixelsToDip(bounds.Right, bounds.Bottom);
-        return new Rect(topLeft, bottomRight);
+        GetWindowRect(hwnd, out var bounds);
+        return bounds;
     }
 
     private void ApplyNativePosition(double left, double top, double width, double height)
     {
-        var topLeft = TransformToDevice.Transform(new System.Windows.Point(left, top));
-        var bottomRight = TransformToDevice.Transform(new System.Windows.Point(left + width, top + height));
-        var pixelWidth = Math.Max(1, (int)Math.Round(bottomRight.X - topLeft.X));
-        var pixelHeight = Math.Max(1, (int)Math.Round(bottomRight.Y - topLeft.Y));
-
         SetWindowPos(hwnd, HWND_TOPMOST,
-            (int)Math.Round(topLeft.X),
-            (int)Math.Round(topLeft.Y),
-            pixelWidth,
-            pixelHeight,
+            (int)Math.Round(left),
+            (int)Math.Round(top),
+            Math.Max(1, (int)Math.Round(width)),
+            Math.Max(1, (int)Math.Round(height)),
             SWP_TOPMOST_POSITION_FLAGS);
+    }
+
+    private void SyncWpfBoundsFromNative(double left, double top)
+    {
+        var transform = PresentationSource.FromVisual(window)?.CompositionTarget?.TransformFromDevice;
+        if (transform == null)
+        {
+            return;
+        }
+
+        var logicalTopLeft = transform.Value.Transform(new System.Windows.Point(left, top));
+        var logicalSize = transform.Value.Transform(new Vector(cachedWidth, cachedHeight));
+        window.Left = logicalTopLeft.X;
+        window.Top = logicalTopLeft.Y;
+        window.Width = logicalSize.X;
+        window.Height = logicalSize.Y;
+    }
+
+    private void ScheduleWpfBoundsSync(double left, double top)
+    {
+        window.Dispatcher.BeginInvoke(
+            DispatcherPriority.Render,
+            new Action(() => SyncWpfBoundsFromNative(left, top)));
     }
 
     private void EnsureCachedSize()
     {
         if (cachedWidth <= 0)
         {
-            cachedWidth = window.Width;
+            var bounds = GetWindowBounds();
+            cachedWidth = bounds.Right - bounds.Left;
         }
 
         if (cachedHeight <= 0)
         {
-            cachedHeight = window.Height;
+            var bounds = GetWindowBounds();
+            cachedHeight = bounds.Bottom - bounds.Top;
         }
     }
 
@@ -176,8 +202,8 @@ public class DockManager
     {
         animationTimer.Stop(); // 停止正在进行的动画
 
-        var bound = ScreenBoundsToDip(ScreenHelper.GetBounds(DockState.CurrentScreenIndex));
-        const double DOCK_SIZE = 150;
+        var bound = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
+        var dockThickness = DOCK_THICKNESS_DIP * CurrentScreenScale;
         double EDGE_LENGTH = (DockState.curDockOrientation == DockOrientation.Vertical
             ? bound.Height : bound.Width) * 0.9;
 
@@ -187,24 +213,24 @@ public class DockManager
         {
             case DockEdge.Top:
                 cachedWidth = EDGE_LENGTH;
-                cachedHeight = DOCK_SIZE;
+                cachedHeight = dockThickness;
                 newLeft = bound.Left + (bound.Width - cachedWidth) / 2;
                 newTop = bound.Top - cachedHeight;
                 break;
             case DockEdge.Bottom:
                 cachedWidth = EDGE_LENGTH;
-                cachedHeight = DOCK_SIZE;
+                cachedHeight = dockThickness;
                 newLeft = bound.Left + (bound.Width - cachedWidth) / 2;
                 newTop = bound.Bottom;
                 break;
             case DockEdge.Left:
-                cachedWidth = DOCK_SIZE;
+                cachedWidth = dockThickness;
                 cachedHeight = EDGE_LENGTH;
                 newLeft = bound.Left - cachedWidth;
                 newTop = bound.Top + (bound.Height - cachedHeight) / 2;
                 break;
             case DockEdge.Right:
-                cachedWidth = DOCK_SIZE;
+                cachedWidth = dockThickness;
                 cachedHeight = EDGE_LENGTH;
                 newLeft = bound.Right;
                 newTop = bound.Top + (bound.Height - cachedHeight) / 2;
@@ -212,20 +238,16 @@ public class DockManager
             default: return;
         }
 
-        // 1. 先更新内部尺寸状态
-        window.Width = cachedWidth;
-        window.Height = cachedHeight;
-
-        // 2. 同步动画缓冲区变量
+        // 1. 同步动画缓冲区变量（统一使用物理像素）
         animCurrentLeft = newLeft;
         animCurrentTop = newTop;
         animTargetLeft = newLeft;
         animTargetTop = newTop;
         visibilityState = DockVisibilityState.Hidden;
 
-        
-        // 3. 使用 Win32 API 瞬间定位，避免 WPF 布局延迟
+        // 2. 使用 Win32 API 瞬间定位，避免 WPF 布局延迟
         ApplyNativePosition(newLeft, newTop, cachedWidth, cachedHeight);
+        ScheduleWpfBoundsSync(newLeft, newTop);
 
         Debug.WriteLine("Edge w h:"+ cachedWidth + " " + cachedHeight);
     }
@@ -240,27 +262,28 @@ public class DockManager
             return;
         }
 
-        var mouse = PixelsToDip(x, y);
-        var bound = ScreenBoundsToDip(ScreenHelper.GetBounds(DockState.CurrentScreenIndex));
-        var offset = HiddenOffset + 20;
+        var bound = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
+        var scale = CurrentScreenScale;
+        var offset = HiddenOffset + HIDE_PADDING_DIP * scale;
+        var trigger = EDGE_TRIGGER_DIP * scale;
 
         switch (DockState.CurrentEdge)
         {
             case DockEdge.Top:
-                if (mouse.Y <= bound.Top + 2) ShowDock();
-                else if (mouse.Y > bound.Top + offset) HideDock();
+                if (y <= bound.Top + trigger) ShowDock();
+                else if (y > bound.Top + offset) HideDock();
                 break;
             case DockEdge.Bottom:
-                if (mouse.Y >= bound.Bottom - 2) ShowDock();
-                else if (mouse.Y < bound.Bottom - offset) HideDock();
+                if (y >= bound.Bottom - trigger) ShowDock();
+                else if (y < bound.Bottom - offset) HideDock();
                 break;
             case DockEdge.Left:
-                if (mouse.X <= bound.Left + 2) ShowDock();
-                else if (mouse.X > bound.Left + offset) HideDock();
+                if (x <= bound.Left + trigger) ShowDock();
+                else if (x > bound.Left + offset) HideDock();
                 break;
             case DockEdge.Right:
-                if (mouse.X >= bound.Right - 2) ShowDock();
-                else if (mouse.X < bound.Right - offset) HideDock();
+                if (x >= bound.Right - trigger) ShowDock();
+                else if (x < bound.Right - offset) HideDock();
                 break;
         }
     }
@@ -277,11 +300,12 @@ public class DockManager
             return;
         }
 
-        var bound = ScreenBoundsToDip(ScreenHelper.GetBounds(DockState.CurrentScreenIndex));
+        var bound = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
 
-        // 每次显隐都以窗口当前真实位置为基准，避免拖拽后回弹到旧缓存坐标。
-        animCurrentLeft = window.Left;
-        animCurrentTop = window.Top;
+        // 每次显隐都以窗口当前物理位置为基准，避免拖拽后回弹到旧缓存坐标。
+        var currentBounds = GetWindowBounds();
+        animCurrentLeft = currentBounds.Left;
+        animCurrentTop = currentBounds.Top;
 
         // 2. 计算目标位置
         animTargetLeft = animCurrentLeft;
@@ -313,11 +337,12 @@ public class DockManager
             return;
         }
 
-        var bound = ScreenBoundsToDip(ScreenHelper.GetBounds(DockState.CurrentScreenIndex));
+        var bound = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
 
-        // 每次显隐都以窗口当前真实位置为基准，避免拖拽后回弹到旧缓存坐标。
-        animCurrentLeft = window.Left;
-        animCurrentTop = window.Top;
+        // 每次显隐都以窗口当前物理位置为基准，避免拖拽后回弹到旧缓存坐标。
+        var currentBounds = GetWindowBounds();
+        animCurrentLeft = currentBounds.Left;
+        animCurrentTop = currentBounds.Top;
 
         // 2. 计算目标位置
         animTargetLeft = animCurrentLeft;
@@ -360,10 +385,8 @@ public class DockManager
         {
             ApplyNativePosition(animTargetLeft, animTargetTop, cachedWidth, cachedHeight);
 
-            // 动画结束时，将最终位置同步回 WPF (可选，保持状态一致性)
-            // 注意：这里是在 Timer 停止前赋值，是安全的
-            window.Left = animTargetLeft;
-            window.Top = animTargetTop;
+            // 动画结束时，将物理像素坐标同步回 WPF 的逻辑坐标。
+            ScheduleWpfBoundsSync(animTargetLeft, animTargetTop);
             visibilityState = visibilityState == DockVisibilityState.AnimatingToShown
                 ? DockVisibilityState.Shown
                 : DockVisibilityState.Hidden;
@@ -385,6 +408,31 @@ public class DockManager
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
         int X, int Y, int cx, int cy, uint uFlags);
 
+    [DllImport("user32.dll")]
+    private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+    [DllImport("Shcore.dll")]
+    private static extern int GetDpiForMonitor(IntPtr hmonitor, uint dpiType, out uint dpiX, out uint dpiY);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
     private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
     private const uint SWP_NOSIZE = 0x0001;
     private const uint SWP_NOMOVE = 0x0002;
@@ -393,5 +441,7 @@ public class DockManager
     private const uint SWP_NOSENDCHANGING = 0x0400; // 防止 WPF 收到多余的移动消息
     private const uint SWP_TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER;
     private const uint SWP_TOPMOST_POSITION_FLAGS = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSENDCHANGING;
+    private const uint MONITOR_DEFAULTTONEAREST = 2;
+    private const uint MDT_EFFECTIVE_DPI = 0;
     #endregion
 }

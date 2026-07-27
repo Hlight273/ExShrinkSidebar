@@ -31,6 +31,8 @@ namespace ExShrinkSidebar.Script.Utils
 {
     public static class ScreenHelper
     {
+        public static bool IsValidScreenIndex(int index) => index >= 0 && index < Screen.AllScreens.Length;
+
         public static MouseEdgeDistance GetMouseEdgeDistance()
         {
             var pos = Control.MousePosition;
@@ -51,11 +53,14 @@ namespace ExShrinkSidebar.Script.Utils
 
         public static Screen GetScreen(int index)
         {
+            if (!IsValidScreenIndex(index))
+                throw new ArgumentOutOfRangeException(nameof(index));
+
             return Screen.AllScreens[index];
         }
         public static Rectangle GetBounds(int index)
         {
-            return Screen.AllScreens[index].Bounds;
+            return GetScreen(index).Bounds;
         }
 
         /// <summary>
@@ -66,7 +71,7 @@ namespace ExShrinkSidebar.Script.Utils
         public static bool IsPointOnScreen(int x, int y, int screenIndex=0, int padding = 10)
         {
             var screens = Screen.AllScreens;
-            if (screenIndex >= screens.Length)
+            if (screenIndex < 0 || screenIndex >= screens.Length)
                 return false;
 
             var screen = screens[screenIndex];

@@ -65,9 +65,13 @@ namespace ExShrinkSidebar.UI.Views.ContextMenu
             var screens = Screen.AllScreens;
             for (int i = 0; i < screens.Length; i++)
             {
-                var item = new ToolStripMenuItem($"显示器 {i}");
+                var screen = screens[i];
                 int index = i;
-                item.Click += (s, args) => OnChangeScreenClicked(index);//闭包index
+                var item = new ToolStripMenuItem(GetScreenMenuText(screen, index))
+                {
+                    Checked = index == DockState.CurrentScreenIndex
+                };
+                item.Click += (s, args) => OnChangeScreenClicked(index);
                 parentItem.DropDownItems.Add(item);
             }
 
@@ -83,7 +87,25 @@ namespace ExShrinkSidebar.UI.Views.ContextMenu
         //点击显示器菜单项
         private void OnChangeScreenClicked(int screenIndex)
         {
-            DockState.SetScreenIndex(screenIndex);
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished)
+            {
+                return;
+            }
+
+            if (dispatcher.CheckAccess())
+            {
+                DockState.SetScreenIndex(screenIndex);
+                return;
+            }
+
+            dispatcher.BeginInvoke(new Action(() => DockState.SetScreenIndex(screenIndex)));
+        }
+
+        private static string GetScreenMenuText(Screen screen, int index)
+        {
+            var primaryLabel = screen.Primary ? "（主显示器）" : string.Empty;
+            return $"显示器 {index + 1}：{screen.DeviceName}{primaryLabel}";
         }
 
         private ToolStripMenuItem CreateLanguageMenuItem(string cultureName, string text)

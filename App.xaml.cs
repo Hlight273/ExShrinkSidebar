@@ -26,14 +26,26 @@ namespace ExShrinkSidebar
                 ? "zh-CN"
                 : "en-US");
 
-            var mainWindow = new MainWindow();
-            MainWindow = mainWindow;
+            DockState.SetEdge(DockEdge.Top);
+            var mainWindow = CreateMainWindow();
 
             SetupNotifyIcon();
 
             mainWindow.Show();
         }
 
+        public void RecreateMainWindow()
+        {
+            MainWindow?.Close();
+            CreateMainWindow().Show();
+        }
+
+        private MainWindow CreateMainWindow()
+        {
+            var mainWindow = new MainWindow();
+            MainWindow = mainWindow;
+            return mainWindow;
+        }
         protected override void OnExit(ExitEventArgs e)
         {
             if (_notifyIcon != null)

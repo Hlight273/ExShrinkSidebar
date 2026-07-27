@@ -31,7 +31,6 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
         void Init(object sender, RoutedEventArgs e)
         {
             dockMgr = new DockManager(this);
-            DockState.SetEdge(DockEdge.Top);
             updateView(null, DockState.Model);
         }
 
@@ -42,16 +41,26 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
             base.Cleanup();
         }
 
-        async void updateView(DockModel oldModel, DockModel newModel)
+        void updateView(DockModel oldModel, DockModel newModel)
         {
-            bool edgeChanged = oldModel?.edge != newModel?.edge;
-            bool screenIndexChanged = oldModel?.screenIndex != newModel?.screenIndex;
-            if ((edgeChanged || screenIndexChanged) && newModel != null)
+            if (newModel == null)
             {
-                Debug.WriteLine("Edge or index changed");
-                dockMgr?.updateEdgePosition();
-                this.updateDockPositionToggleView(newModel.edge);
+                return;
             }
+
+            if (oldModel != null && oldModel.screenIndex != newModel.screenIndex)
+            {
+                (System.Windows.Application.Current as App)?.RecreateMainWindow();
+                return;
+            }
+
+            if (oldModel == null || oldModel.edge != newModel.edge)
+            {
+                Debug.WriteLine("Dock edge changed");
+                dockMgr?.updateEdgePosition();
+                updateDockPositionToggleView(newModel.edge);
+            }
+
             SetupDragBar();
             refreshButtons();
         }

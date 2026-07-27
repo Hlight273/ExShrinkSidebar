@@ -47,13 +47,43 @@ namespace ExShrinkSidebar.Script.Core
 
         public static void SetScreenIndex(int index)
         {
-            if (CurrentScreenIndex != index)
+            if (!ScreenHelper.IsValidScreenIndex(index) || CurrentScreenIndex == index)
             {
-                var oldModel = (DockModel)_model.Clone();
-                CurrentScreenIndex = index;
-                var newModel = (DockModel)_model.Clone();
-                EVENT.emit(EventIds.ON_DOCK_MODEL_CHANGED, new DockModelArg(oldModel, newModel));
+                return;
             }
+
+            var oldModel = (DockModel)_model.Clone();
+
+            if (!TryGetAvailableEdge(index, CurrentEdge, out var edge))
+            {
+                return;
+            }
+
+            CurrentScreenIndex = index;
+            CurrentEdge = edge;
+            var newModel = (DockModel)_model.Clone();
+            EVENT.emit(EventIds.ON_DOCK_MODEL_CHANGED, new DockModelArg(oldModel, newModel));
+        }
+
+        private static bool TryGetAvailableEdge(int screenIndex, DockEdge preferredEdge, out DockEdge edge)
+        {
+            if (!ScreenHelper.IsEdgeConnected(screenIndex, preferredEdge))
+            {
+                edge = preferredEdge;
+                return true;
+            }
+
+            foreach (var candidate in Enum.GetValues<DockEdge>())
+            {
+                if (!ScreenHelper.IsEdgeConnected(screenIndex, candidate))
+                {
+                    edge = candidate;
+                    return true;
+                }
+            }
+
+            edge = preferredEdge;
+            return false;
         }
     }
 
