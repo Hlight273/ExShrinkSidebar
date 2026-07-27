@@ -18,12 +18,12 @@ public class DockManager
         AnimatingToShown
     }
 
-    private Window window;
+    private readonly Window window;
     private IntPtr hwnd = IntPtr.Zero;
     private bool paused = false;
 
     // 动画相关变量
-    private DispatcherTimer animationTimer;
+    private readonly DispatcherTimer animationTimer;
 
     // 双缓冲变量：动画过程中只读写这些变量，绝不访问 window 属性
     private double animCurrentLeft;
@@ -39,14 +39,9 @@ public class DockManager
     public DockManager(Window w)
     {
         window = w;
-        window.SourceInitialized += (s, e) =>
-        {
-            hwnd = new WindowInteropHelper(window).Handle;
-        };
-        if (hwnd == IntPtr.Zero)
-        {
-            hwnd = new WindowInteropHelper(window).Handle;
-        }
+        RegisterTopmostEnforcement();
+        InitializeWindowHandle();
+        EnsureTopmost();
 
         // 使用 Send 优先级，确保动画逻辑优先于其他 UI 逻辑
         animationTimer = new DispatcherTimer(DispatcherPriority.Send);
@@ -60,6 +55,60 @@ public class DockManager
 
     public void Pause() => paused = true;
     public void Resume() => paused = false;
+
+    private void RegisterTopmostEnforcement()
+    {
+        window.SourceInitialized += OnSourceInitialized;
+        window.Deactivated += OnWindowDeactivated;
+    }
+
+    private void UnregisterTopmostEnforcement()
+    {
+        window.SourceInitialized -= OnSourceInitialized;
+        window.Deactivated -= OnWindowDeactivated;
+    }
+
+    private void OnSourceInitialized(object sender, EventArgs e)
+    {
+        InitializeWindowHandle();
+        EnsureTopmost();
+    }
+
+    private void OnWindowDeactivated(object sender, EventArgs e)
+    {
+        // 窗口失焦后不抢占焦点，在当前消息处理完成后恢复原生置顶层级。
+        window.Dispatcher.BeginInvoke(
+            DispatcherPriority.ApplicationIdle,
+            new Action(EnsureTopmostWhenVisible));
+    }
+
+    private void InitializeWindowHandle()
+    {
+        if (hwnd == IntPtr.Zero)
+        {
+            hwnd = new WindowInteropHelper(window).Handle;
+        }
+    }
+
+    private void EnsureTopmostWhenVisible()
+    {
+        if (window.IsVisible)
+        {
+            EnsureTopmost();
+        }
+    }
+
+    private void EnsureTopmost()
+    {
+        window.Topmost = true;
+        if (hwnd == IntPtr.Zero)
+        {
+            return;
+        }
+
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+            SWP_TOPMOST_FLAGS);
+    }
 
     private double HiddenOffset
     {
@@ -101,12 +150,12 @@ public class DockManager
         var pixelWidth = Math.Max(1, (int)Math.Round(bottomRight.X - topLeft.X));
         var pixelHeight = Math.Max(1, (int)Math.Round(bottomRight.Y - topLeft.Y));
 
-        SetWindowPos(hwnd, IntPtr.Zero,
+        SetWindowPos(hwnd, HWND_TOPMOST,
             (int)Math.Round(topLeft.X),
             (int)Math.Round(topLeft.Y),
             pixelWidth,
             pixelHeight,
-            SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+            SWP_TOPMOST_POSITION_FLAGS);
     }
 
     private void EnsureCachedSize()
@@ -218,6 +267,8 @@ public class DockManager
 
     public void ShowDock()
     {
+        EnsureTopmost();
+
         // 动画阶段保持使用停靠时确定的固定尺寸，避免透明窗口布局把 ActualSize 挤小。
         EnsureCachedSize();
 
@@ -326,6 +377,7 @@ public class DockManager
         animationTimer.Stop();
         HookManager.MouseMoved -= OnMouseMove;
         HookManager.Stop();
+        UnregisterTopmostEnforcement();
     }
 
     #region Win32 API
@@ -333,8 +385,13 @@ public class DockManager
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
         int X, int Y, int cx, int cy, uint uFlags);
 
-    private const uint SWP_NOZORDER = 0x0004;
+    private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+    private const uint SWP_NOSIZE = 0x0001;
+    private const uint SWP_NOMOVE = 0x0002;
     private const uint SWP_NOACTIVATE = 0x0010;
+    private const uint SWP_NOOWNERZORDER = 0x0200;
     private const uint SWP_NOSENDCHANGING = 0x0400; // 防止 WPF 收到多余的移动消息
+    private const uint SWP_TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER;
+    private const uint SWP_TOPMOST_POSITION_FLAGS = SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOSENDCHANGING;
     #endregion
 }
