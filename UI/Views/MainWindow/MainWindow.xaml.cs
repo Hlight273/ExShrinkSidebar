@@ -70,8 +70,10 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
             var config = ConfigManager.Instance.Config;
             if (config?.buttons == null) return;
 
+            var visibleButtons = GetVisibleDockButtons(config.buttons);
+
             int currentCount = ButtonPanel.Children.Count;
-            int targetCount = config.buttons.Count;
+            int targetCount = visibleButtons.Count;
             for (int i = targetCount; i < currentCount; i++)
             {
                 if (i < ButtonPanel.Children.Count)
@@ -82,7 +84,7 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
 
             for (int i = 0; i < targetCount; i++)
             {
-                var b = config.buttons[i];
+                var b = visibleButtons[i];
                 if (i < currentCount)
                 {
                     if (ButtonPanel.Children[i] is IconButton existingBtn)
@@ -102,6 +104,34 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
             var orientation = ScreenHelper.getMainLayoutOrientation(DockState.CurrentEdge);
             ButtonPanel.Orientation = InnerPanel.Orientation = orientation;
 
+        }
+
+        private List<ButtonConfig> GetVisibleDockButtons(IEnumerable<ButtonConfig> buttons)
+        {
+            var capacity = GetDockButtonCapacity();
+            return buttons
+                .Where(button => button.dockDisplayOrder > 0 && button.dockDisplayOrder <= capacity)
+                .GroupBy(button => button.dockDisplayOrder)
+                .OrderBy(group => group.Key)
+                .Select(group => group.First())
+                .ToList();
+        }
+
+        private int GetDockButtonCapacity()
+        {
+            const double dockLengthRatio = 0.9;
+            const double buttonSizeDip = 72;
+            const double buttonMarginDip = 16;
+            const int reservedSlotCount = 3;
+
+            var screenBounds = ScreenHelper.GetBounds(DockState.CurrentScreenIndex);
+            var physicalLength = DockState.curDockOrientation == DockOrientation.Horizontal
+                ? screenBounds.Width
+                : screenBounds.Height;
+            var scale = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1d;
+            var buttonFootprint = (buttonSizeDip + buttonMarginDip) * scale;
+
+            return Math.Max(0, (int)Math.Floor(physicalLength * dockLengthRatio / buttonFootprint) - reservedSlotCount);
         }
 
         #region Drag Logic

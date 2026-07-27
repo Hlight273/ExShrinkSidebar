@@ -14,6 +14,10 @@ namespace ExShrinkSidebar.Script.Model
         public long id { get; set; }
         public string name { get; set; } = string.Empty;
         public string icon { get; set; } = string.Empty;
+        /// <summary>
+        /// 根节点在 Dock 中的展示槽位（从 1 开始）。超出当前 Dock 容量的槽位不会显示。
+        /// </summary>
+        public int dockDisplayOrder { get; set; }
 
         public ExConfigType configType { get; set; }
         public List<ButtonConfig> logicChain { get; set; } = new List<ButtonConfig>();

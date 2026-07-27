@@ -147,6 +147,9 @@
   <data name="Ui_FunctionLabel" xml:space="preserve">
     <value>Function:</value>
   </data>
+  <data name="Ui_DockDisplayOrderLabel" xml:space="preserve">
+    <value>Dock display order:</value>
+  </data>
   <data name="Ui_SummarySteps" xml:space="preserve">
     <value>Steps: {0}</value>
   </data>

@@ -10,6 +10,7 @@ namespace ExShrinkSidebar.Script.Localization
         public const string NewStepName = "Ui_NewStepName";
         public const string ConfigNameLabel = "Ui_ConfigNameLabel";
         public const string FunctionLabel = "Ui_FunctionLabel";
+        public const string DockDisplayOrderLabel = "Ui_DockDisplayOrderLabel";
         public const string SummarySteps = "Ui_SummarySteps";
         public const string SummaryOpenFolder = "Ui_SummaryOpenFolder";
         public const string SummaryOpenFolderWithCorner = "Ui_SummaryOpenFolderWithCorner";
@@ -48,6 +49,7 @@ namespace ExShrinkSidebar.Script.Localization
             [NewStepName] = "\u65B0\u6B65\u9AA4",
             [ConfigNameLabel] = "\u914D\u7F6E\u540D\u79F0\uFF1A",
             [FunctionLabel] = "\u529F\u80FD\uFF1A",
+            [DockDisplayOrderLabel] = "Dock \u5C55\u793A\u5E8F\u53F7\uFF1A",
             [SummarySteps] = "\u6B65\u9AA4: {0}",
             [SummaryOpenFolder] = "\u76EE\u5F55: {0}",
             [SummaryOpenFolderWithCorner] = "\u76EE\u5F55: {0} | \u89D2\u843D: {1}",

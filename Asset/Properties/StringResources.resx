@@ -147,6 +147,9 @@
   <data name="Ui_FunctionLabel" xml:space="preserve">
     <value>功能：</value>
   </data>
+  <data name="Ui_DockDisplayOrderLabel" xml:space="preserve">
+    <value>Dock 展示序号：</value>
+  </data>
   <data name="Ui_SummarySteps" xml:space="preserve">
     <value>步骤: {0}</value>
   </data>

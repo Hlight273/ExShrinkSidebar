@@ -32,6 +32,7 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
             TypeComboBox.ItemsSource = Enum.GetValues(typeof(ExConfigType));
             ConfigNameLabelText.Text = UiTextCatalog.Get(UiTextCatalog.ConfigNameLabel);
             FunctionLabelText.Text = UiTextCatalog.Get(UiTextCatalog.FunctionLabel);
+            DockDisplayOrderLabelText.Text = UiTextCatalog.Get(UiTextCatalog.DockDisplayOrderLabel);
         }
 
         public void SetData(ButtonConfig cfg, int depth = 0, ButtonConfig parent = null)
@@ -44,6 +45,8 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
             IndentPad.Width = depth * INDENT_WIDTH;
             TypeComboBox.SelectedItem = cfg.configType;
             NameTextBox.Text = cfg.name ?? string.Empty;
+            DockDisplayOrderRow.Visibility = parent == null ? Visibility.Visible : Visibility.Collapsed;
+            DockDisplayOrderTextBox.Text = parent == null ? cfg.dockDisplayOrder.ToString() : string.Empty;
 
             RefreshNodeDisplay();
             RenderChildren();
@@ -140,6 +143,19 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
             }
 
             _cfg.name = NameTextBox.Text;
+            EmitUpdate();
+        }
+
+        private void DockDisplayOrderTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isBinding || _cfg == null || _cfg.Parent != null)
+            {
+                return;
+            }
+
+            _cfg.dockDisplayOrder = int.TryParse(DockDisplayOrderTextBox.Text, out var value) && value > 0
+                ? value
+                : 0;
             EmitUpdate();
         }
 

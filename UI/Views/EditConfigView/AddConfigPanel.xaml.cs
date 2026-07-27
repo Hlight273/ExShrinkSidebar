@@ -4,6 +4,7 @@ using ExShrinkSidebar.Script.Localization;
 using ExShrinkSidebar.Script.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -41,6 +42,7 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
             {
                 id = ConfigManager.Instance.ReserveNextId(),
                 name = UiTextCatalog.Get(UiTextCatalog.NewConfigName),
+                dockDisplayOrder = _rootList.Count == 0 ? 1 : _rootList.Max(x => x.dockDisplayOrder) + 1,
                 configType = ExConfigType.Execute
             };
 
