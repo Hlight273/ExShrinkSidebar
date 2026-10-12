@@ -1,0 +1,25 @@
+schema: spec-driven
+
+context: |
+  Language: zh-CN. 内容使用中文，保留 OpenSpec 英文结构标题及 SHALL/MUST 关键字。
+  ExShrinkSidebar 是 .NET 8 / WPF Windows 桌面侧边栏，使用 Windows Forms 托盘、Win32 和 COM。
+  主规格 openspec/specs/*/spec.md 是已实现行为的事实来源；维护流程见 openspec/README.md。
+  协作与分层验证约束见 AGENTS.md，架构边界见 docs/FrameworkArchitecture.md。
+  上下文工作流见 docs/AIContextAndCodingWorkflow.md；业务任务使用 .agents/skills/business-context-router/SKILL.md。
+  先按路径与标题选择相关主规格，再读架构章节和直接代码依赖；默认不读取历史归档。
+  用户配置位于 %APPDATA%/ExShrinkBar/Config/config.json，不得提交用户配置。
+  编辑器编辑工作副本，保存后发出 ON_CONFIG_SAVED；动作树先展平再顺序调用叶子动作。
+  当前支持选择一个显示器承载 Dock，不代表每屏独立 Dock。
+  没有独立自动化测试项目；Windows UI、DPI、Hook 和 Explorer COM 行为需手动验证。
+
+rules:
+  proposal:
+    - 明确涉及的能力名称、用户可见行为、兼容性与非目标。
+  specs:
+    - 使用 ADDED/MODIFIED/REMOVED Requirements 描述增量。
+    - 每条 Requirement 使用 SHALL 或 MUST，至少包含一个带 WHEN/THEN 的 Scenario。
+    - 修改现有需求时包含完整需求及场景，名称须与主规格准确匹配。
+    - 区分现有行为、已知限制和拟议行为，不把未实现功能写成现状。
+  tasks:
+    - 包含实现、适用验证、同步 openspec/specs 主规格及相关文档的任务。
+    - 记录实际验证结果和环境阻碍，不将未执行的运行时验收标为通过。

@@ -1,6 +1,10 @@
 # 项目风格与架构
 
+完整实现导航、状态所有权和生命周期统一维护在 [FrameworkArchitecture.md](FrameworkArchitecture.md)；AI 上下文选择流程见 [AIContextAndCodingWorkflow.md](AIContextAndCodingWorkflow.md)。本文保留产品风格与模块概览，不另行定义业务契约。
+
 ## 项目定位
+
+已实现行为的权威规格见 [OpenSpec 主规格](../openspec/README.md)。本文说明架构与风格；修改行为时需同步维护对应主规格。
 
 ExShrinkSidebar 是一个基于 `.NET 8` 与 `WPF` 的 Windows 桌面侧边栏 Dock 工具。
 
@@ -103,4 +107,4 @@ ExShrinkSidebar 是一个基于 `.NET 8` 与 `WPF` 的 Windows 桌面侧边栏 D
 - 给编辑器补 ViewModel 分层，逐步减少 CodeBehind 体积。
 - 给配置读写、动作展开、节点操作增加测试。
 - 为动作失败和参数非法情况补用户可见的错误提示。
-- 如果后续支持多屏，应把窗口定位和资源管理器窗口重排策略继续拆分。
+- 当前支持通过托盘将单个 Dock 切换到不同显示器；后续若支持每屏独立 Dock，应进一步拆分窗口定位与资源管理器窗口重排策略。
