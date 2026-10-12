@@ -19,6 +19,10 @@ namespace ExShrinkSidebar.Script.Localization
         public const string SummaryNotConfiguredExecute = "Ui_SummaryNotConfiguredExecute";
         public const string SummaryNotepad = "Ui_SummaryNotepad";
         public const string AddRootTooltip = "Ui_AddRootTooltip";
+        // 配置排序手柄的悬浮提示，说明该区域用于拖动而非执行动作。
+        public const string DragToReorder = "Ui_DragToReorder";
+        // 节点名称后的只读同级位置，参数为从 1 开始的序号。
+        public const string NodeOrdinal = "Ui_NodeOrdinal";
         public const string RootCardTitle = "Ui_RootCardTitle";
         public const string SaveAndClose = "Ui_SaveAndClose";
         public const string ScriptEditorEntry = "Ui_ScriptEditorEntry";
@@ -58,6 +62,8 @@ namespace ExShrinkSidebar.Script.Localization
             [SummaryNotConfiguredExecute] = "\u672A\u914D\u7F6E\u6267\u884C\u76EE\u6807",
             [SummaryNotepad] = "\u76F4\u63A5\u6253\u5F00\u8BB0\u4E8B\u672C",
             [AddRootTooltip] = "\u65B0\u589E\u6839\u914D\u7F6E",
+            [DragToReorder] = "拖动排序",
+            [NodeOrdinal] = "第 {0} 项",
             [RootCardTitle] = "\u6839\u914D\u7F6E",
             [SaveAndClose] = "\u4FDD\u5B58\u5E76\u5173\u95ED",
             [ScriptEditorEntry] = "\u811A\u672C\u7F16\u8F91",

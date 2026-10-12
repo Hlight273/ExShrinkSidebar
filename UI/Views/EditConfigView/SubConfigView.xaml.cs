@@ -9,11 +9,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Color = System.Windows.Media.Color;
-using ColorConverter = System.Windows.Media.ColorConverter;
-using DataObject = System.Windows.DataObject;
-using DragDropEffects = System.Windows.DragDropEffects;
-using DragEventArgs = System.Windows.DragEventArgs;
 using Point = System.Windows.Point;
 
 namespace ExShrinkSidebar.UI.Views.EditConfigView
@@ -24,7 +19,29 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
         private int _depth;
         private bool _isBinding;
         private Point _dragStartPoint;
+        private Point _dragGrabOffset;
+        private bool _canStartDrag;
+        // 每一层配置树在节点行内增加的缩进，单位为设备无关像素。
         private const int INDENT_WIDTH = 20;
+
+        /// <summary>提供当前节点数据，供编辑器校验同级落点。</summary>
+        internal ButtonConfig ConfigNode => _cfg;
+
+        /// <summary>提供自身节点行，不包含展开的子树。</summary>
+        internal FrameworkElement DragRow => NodeBorder;
+
+        /// <summary>根节点使用完整外层卡片，子节点使用包含展开子树的视图作为提示边界。</summary>
+        internal FrameworkElement DragContainer => _cfg.Parent == null &&
+            Parent is StackPanel content && content.Parent is Border card ? card : this;
+
+        /// <summary>节点的树层级缩进，用于对齐快照及插入提示。</summary>
+        internal double DragIndent => _depth * INDENT_WIDTH;
+
+        /// <summary>名称后的只读同级序号；从 1 开始，不写入配置名称或旧序号字段。</summary>
+        internal int SiblingOrdinal
+        {
+            set => OrdinalText.Text = UiTextCatalog.Format(UiTextCatalog.NodeOrdinal, value);
+        }
 
         public SubConfigView()
         {
@@ -32,21 +49,22 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
             TypeComboBox.ItemsSource = Enum.GetValues(typeof(ExConfigType));
             ConfigNameLabelText.Text = UiTextCatalog.Get(UiTextCatalog.ConfigNameLabel);
             FunctionLabelText.Text = UiTextCatalog.Get(UiTextCatalog.FunctionLabel);
-            DockDisplayOrderLabelText.Text = UiTextCatalog.Get(UiTextCatalog.DockDisplayOrderLabel);
         }
 
-        public void SetData(ButtonConfig cfg, int depth = 0, ButtonConfig parent = null)
+        /// <summary>绑定工作副本节点、树层级、父节点和从 1 开始的同级显示序号。</summary>
+        public void SetData(ButtonConfig cfg, int depth = 0, ButtonConfig parent = null, int siblingOrdinal = 1)
         {
             _isBinding = true;
             _cfg = cfg;
             _depth = depth;
             _cfg.Parent = parent;
+            SiblingOrdinal = siblingOrdinal;
 
             IndentPad.Width = depth * INDENT_WIDTH;
+            ChildDragHandle.Visibility = parent == null ? Visibility.Collapsed : Visibility.Visible;
+            ChildDragHandle.ToolTip = UiTextCatalog.Get(UiTextCatalog.DragToReorder);
             TypeComboBox.SelectedItem = cfg.configType;
             NameTextBox.Text = cfg.name ?? string.Empty;
-            DockDisplayOrderRow.Visibility = parent == null ? Visibility.Visible : Visibility.Collapsed;
-            DockDisplayOrderTextBox.Text = parent == null ? cfg.dockDisplayOrder.ToString() : string.Empty;
 
             RefreshNodeDisplay();
             RenderChildren();
@@ -108,12 +126,6 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
             MoreParamsBtn.Visibility = NeedsDetailPanel(_cfg.configType) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void ResetDropIndicator()
-        {
-            NodeBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#444"));
-            NodeBorder.BorderThickness = new Thickness(0, 0, 0, 1);
-        }
-
         private bool NeedsDetailPanel(ExConfigType configType)
         {
             return configType == ExConfigType.OpenFolder || configType == ExConfigType.Execute;
@@ -130,7 +142,7 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
             foreach (var child in _cfg.logicChain)
             {
                 var view = new SubConfigView();
-                view.SetData(child, _depth + 1, _cfg);
+                view.SetData(child, _depth + 1, _cfg, ChildrenContainer.Children.Count + 1);
                 ChildrenContainer.Children.Add(view);
             }
         }
@@ -143,19 +155,6 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
             }
 
             _cfg.name = NameTextBox.Text;
-            EmitUpdate();
-        }
-
-        private void DockDisplayOrderTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_isBinding || _cfg == null || _cfg.Parent != null)
-            {
-                return;
-            }
-
-            _cfg.dockDisplayOrder = int.TryParse(DockDisplayOrderTextBox.Text, out var value) && value > 0
-                ? value
-                : 0;
             EmitUpdate();
         }
 
@@ -251,87 +250,68 @@ namespace ExShrinkSidebar.UI.Views.EditConfigView
             });
         }
 
-        private void NodeBorder_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        /// <summary>
+        /// 根节点抓取角和子节点握把共用入口，捕获鼠标以支持快速移出手柄后继续拖动。
+        /// </summary>
+        internal void DragHandle_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            _dragStartPoint = e.GetPosition(this);
-        }
-
-        private void NodeBorder_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (e.LeftButton != System.Windows.Input.MouseButtonState.Pressed || _cfg == null)
+            if (sender is not FrameworkElement handle || _cfg == null)
             {
                 return;
             }
+            _dragStartPoint = e.GetPosition(handle);
+            // 根手柄位于整卡底部，紧凑行预览改为从左下角抓取，避免出现整棵子树高度的偏移。
+            _dragGrabOffset = _cfg.Parent == null
+                ? new Point(Math.Clamp(_dragStartPoint.X, 0, NodeBorder.ActualWidth), Math.Max(0, NodeBorder.ActualHeight - 6))
+                : e.GetPosition(NodeBorder);
+            _canStartDrag = handle.CaptureMouse();
+            e.Handled = true;
+        }
 
-            var currentPosition = e.GetPosition(this);
+        /// <summary>
+        /// 两类手柄超过系统阈值后释放捕获，将预览、滚动和排序交给编辑器。
+        /// </summary>
+        internal void DragHandle_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (sender is not FrameworkElement handle)
+            {
+                return;
+            }
+            if (e.LeftButton != System.Windows.Input.MouseButtonState.Pressed)
+            {
+                _canStartDrag = false;
+                if (handle.IsMouseCaptured)
+                {
+                    handle.ReleaseMouseCapture();
+                }
+                return;
+            }
+            if (!_canStartDrag || _cfg == null)
+            {
+                return;
+            }
+            var currentPosition = e.GetPosition(handle);
             if (Math.Abs(currentPosition.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
                 Math.Abs(currentPosition.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
             {
                 return;
             }
-
-            DragDrop.DoDragDrop(this, new DataObject(typeof(ButtonConfig), _cfg), DragDropEffects.Move);
-        }
-
-        private void NodeBorder_DragOver(object sender, DragEventArgs e)
-        {
-            if (!e.Data.GetDataPresent(typeof(ButtonConfig)))
-            {
-                e.Effects = DragDropEffects.None;
-                ResetDropIndicator();
-                return;
-            }
-
-            var dragNode = e.Data.GetData(typeof(ButtonConfig)) as ButtonConfig;
-            if (dragNode == null || ReferenceEquals(dragNode, _cfg) || !ReferenceEquals(dragNode.Parent, _cfg.Parent))
-            {
-                e.Effects = DragDropEffects.None;
-                ResetDropIndicator();
-                return;
-            }
-
-            e.Effects = DragDropEffects.Move;
+            _canStartDrag = false;
+            handle.ReleaseMouseCapture();
             e.Handled = true;
-
-            var position = e.GetPosition(NodeBorder);
-            var insertAfter = position.Y > NodeBorder.ActualHeight / 2;
-            NodeBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF688BC3"));
-            NodeBorder.BorderThickness = insertAfter ? new Thickness(0, 0, 0, 2) : new Thickness(0, 2, 0, 1);
-        }
-
-        private void NodeBorder_DragLeave(object sender, DragEventArgs e)
-        {
-            ResetDropIndicator();
-        }
-
-        private void NodeBorder_Drop(object sender, DragEventArgs e)
-        {
-            try
+            if (Window.GetWindow(this) is AddConfigPanel editor)
             {
-                if (!e.Data.GetDataPresent(typeof(ButtonConfig)))
-                {
-                    return;
-                }
-
-                var dragNode = e.Data.GetData(typeof(ButtonConfig)) as ButtonConfig;
-                if (dragNode == null || ReferenceEquals(dragNode, _cfg) || !ReferenceEquals(dragNode.Parent, _cfg.Parent))
-                {
-                    return;
-                }
-
-                var position = e.GetPosition(NodeBorder);
-                var insertAfter = position.Y > NodeBorder.ActualHeight / 2;
-
-                EVENT.emit(EventIds.ON_CONFIG_NODE_REORDER_REQUEST, this, new ConfigNodeReorderEventArg
-                {
-                    DragNode = dragNode,
-                    TargetNode = _cfg,
-                    InsertAfter = insertAfter
-                });
+                editor.DragNode(this, _cfg, _dragGrabOffset);
             }
-            finally
+        }
+
+        /// <summary>点击后松手或捕获丢失时取消待启动拖拽，防止下一次移动误触发。</summary>
+        internal void DragHandle_EndCapture(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            _canStartDrag = false;
+            if (sender is FrameworkElement handle && handle.IsMouseCaptured)
             {
-                ResetDropIndicator();
+                handle.ReleaseMouseCapture();
             }
         }
     }

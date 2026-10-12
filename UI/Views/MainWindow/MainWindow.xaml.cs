@@ -1,4 +1,4 @@
-﻿using ExShrinkSidebar.Script.Core;
+using ExShrinkSidebar.Script.Core;
 using ExShrinkSidebar.Script.Core.Event;
 using ExShrinkSidebar.Script.Model;
 using ExShrinkSidebar.Script.Utils;
@@ -109,12 +109,8 @@ namespace ExShrinkSidebar.UI.Views.MainWindow
         private List<ButtonConfig> GetVisibleDockButtons(IEnumerable<ButtonConfig> buttons)
         {
             var capacity = GetDockButtonCapacity();
-            return buttons
-                .Where(button => button.dockDisplayOrder > 0 && button.dockDisplayOrder <= capacity)
-                .GroupBy(button => button.dockDisplayOrder)
-                .OrderBy(group => group.Key)
-                .Select(group => group.First())
-                .ToList();
+            // Dock 与编辑器共用根列表顺序，旧展示序号不再参与筛选或去重。
+            return buttons.Take(capacity).ToList();
         }
 
         private int GetDockButtonCapacity()

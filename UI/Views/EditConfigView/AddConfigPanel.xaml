@@ -8,6 +8,9 @@
         Title="Config Editor"
         Height="560"
         Width="780"
+        FontFamily="Microsoft YaHei UI"
+        FontSize="12"
+        UseLayoutRounding="True"
         MinWidth="620"
         MinHeight="420"
         WindowStyle="None"
@@ -17,8 +20,32 @@
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="PrimaryBlueBrush" Color="#FF688BC3"/>
-        <SolidColorBrush x:Key="PrimaryBlueHoverBrush" Color="#FF7A9AD0"/>
+        <Style x:Key="RootDragHandleStyle" TargetType="Control">
+            <Setter Property="Width" Value="26"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Cursor" Value="SizeAll"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Control">
+                        <!-- 三角裁剪同时限定鼠标命中，避免透明矩形区域抢占操作。 -->
+                        <Grid Clip="M0,0 L26,26 L0,26 Z" Background="Transparent">
+                            <Path x:Name="GripBackground" Data="M0,0 L26,26 L0,26 Z" Fill="#252E3B"/>
+                            <Path x:Name="GripLines" Data="M4,14 L12,22 M4,20 L6,22 M4,8 L18,22"
+                                  Stroke="#7E94B0" StrokeThickness="1.3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="GripBackground" Property="Fill" Value="#FF526F96"/>
+                                <Setter TargetName="GripLines" Property="Stroke" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <SolidColorBrush x:Key="PrimaryBlueBrush" Color="#477AC2"/>
+        <SolidColorBrush x:Key="PrimaryBlueHoverBrush" Color="#6394DB"/>
         <SolidColorBrush x:Key="PrimaryBlueSoftBrush" Color="#224A7CC2"/>
         <SolidColorBrush x:Key="PanelBorderBrush" Color="#334D5966"/>
         <SolidColorBrush x:Key="PanelGrayBrush" Color="#183B434D"/>
@@ -47,7 +74,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="12,6">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="16,9">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -60,10 +87,35 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource FlatButtonStyle}">
+            <Setter Property="Background" Value="#252F3E"/>
+            <Setter Property="BorderBrush" Value="#43536A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#C7D5E8"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#334966"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="ResizeThumbBaseStyle" TargetType="{x:Type primitives:Thumb}">
             <Setter Property="Width" Value="20"/>
             <Setter Property="Height" Value="20"/>
             <Setter Property="Background" Value="Transparent"/>
+        </Style>
+
+        <Style x:Key="ScrollTrackButtonStyle" TargetType="RepeatButton">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <!-- 透明背景保留轨道命中区域，不继承系统按钮的悬浮外观。 -->
+                        <Border Background="Transparent"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="{x:Type ScrollBar}">
@@ -79,19 +131,35 @@
                                    ViewportSize="{TemplateBinding ViewportSize}"
                                    Orientation="{TemplateBinding Orientation}">
                                 <Track.DecreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderThickness="0" IsTabStop="False"/>
+                                    <RepeatButton x:Name="PageBefore"
+                                                  Style="{StaticResource ScrollTrackButtonStyle}"
+                                                  Command="ScrollBar.PageUpCommand"
+                                                  CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
                                 </Track.DecreaseRepeatButton>
                                 <Track.Thumb>
-                                    <Thumb Background="{StaticResource PrimaryBlueBrush}">
+                                    <Thumb Background="#45546B">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Border Background="{TemplateBinding Background}" CornerRadius="6" Margin="2"/>
+                                                <Grid Background="Transparent">
+                                                    <Border x:Name="ThumbBody" Background="{TemplateBinding Background}" CornerRadius="6" Margin="2"/>
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ThumbBody" Property="Background" Value="{StaticResource PrimaryBlueHoverBrush}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsDragging" Value="True">
+                                                        <Setter TargetName="ThumbBody" Property="Background" Value="{StaticResource PrimaryBlueHoverBrush}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
                                 </Track.Thumb>
                                 <Track.IncreaseRepeatButton>
-                                    <RepeatButton Background="Transparent" BorderThickness="0" IsTabStop="False"/>
+                                    <RepeatButton x:Name="PageAfter"
+                                                  Style="{StaticResource ScrollTrackButtonStyle}"
+                                                  Command="ScrollBar.PageDownCommand"
+                                                  CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
                                 </Track.IncreaseRepeatButton>
                             </Track>
                         </Grid>
@@ -101,6 +169,8 @@
                             </Trigger>
                             <Trigger Property="Orientation" Value="Horizontal">
                                 <Setter TargetName="PART_Track" Property="IsDirectionReversed" Value="False"/>
+                                <Setter TargetName="PageBefore" Property="Command" Value="ScrollBar.PageLeftCommand"/>
+                                <Setter TargetName="PageAfter" Property="Command" Value="ScrollBar.PageRightCommand"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -117,21 +187,21 @@
         </Style>
     </Window.Resources>
 
-    <Border CornerRadius="10" Background="#FF2D2D30" BorderBrush="{StaticResource PrimaryBlueBrush}" BorderThickness="1">
+    <Border CornerRadius="10" Background="#171B22" BorderBrush="#39485E" BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="40"/>
+                <RowDefinition Height="52"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="64"/>
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0" Background="Transparent" MouseLeftButtonDown="OnDragMove">
                 <TextBlock x:Name="TitleText"
                            Text="&#x811A;&#x672C;&#x914D;&#x7F6E;&#x7F16;&#x8F91;&#x5668;"
                            Foreground="White"
-                           Margin="15,0,0,0"
+                           Margin="22,0,0,0"
                            VerticalAlignment="Center"
-                           FontSize="14"/>
+                           FontSize="14" FontWeight="SemiBold"/>
                 <Button x:Name="CloseBtn"
                         Content="&#x2715;"
                         Width="30"
@@ -146,20 +216,25 @@
                         Margin="0,0,10,0"/>
             </Grid>
 
-            <ScrollViewer x:Name="TreeScrollViewer"
-                          Grid.Row="1"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Auto"
-                          CanContentScroll="False"
-                          Padding="2">
-                <StackPanel x:Name="TreeContainer" Margin="10,5,10,10"/>
-            </ScrollViewer>
+            <AdornerDecorator Grid.Row="1">
+                <ScrollViewer x:Name="TreeScrollViewer"
+                              AllowDrop="True"
+                              PreviewDragOver="TreeScrollViewer_PreviewDragOver"
+                              PreviewDrop="TreeScrollViewer_PreviewDrop"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto"
+                              CanContentScroll="False"
+                              Padding="2">
+                    <StackPanel x:Name="TreeContainer" Margin="16,4,12,12"/>
+                </ScrollViewer>
+            </AdornerDecorator>
 
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,15">
+            <Border Grid.Row="2" Background="#1B2029" BorderBrush="#2E3847" BorderThickness="0,1,0,0" CornerRadius="0,0,10,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
                 <Button x:Name="AddRootBtn"
                         Content="&#x6DFB;&#x52A0;&#x6839;&#x8282;&#x70B9;"
                         Click="OnAddRootClick"
-                        Style="{StaticResource FlatButtonStyle}"
+                        Style="{StaticResource SecondaryButtonStyle}"
                         Margin="0,0,10,0"/>
 
                 <Button x:Name="ConfirmBtn"
@@ -167,6 +242,7 @@
                         Click="OnConfirmClick"
                         Style="{StaticResource FlatButtonStyle}"/>
             </StackPanel>
+            </Border>
 
             <primitives:Thumb Grid.RowSpan="3"
                               Panel.ZIndex="10"
@@ -180,8 +256,8 @@
                     <ControlTemplate TargetType="{x:Type primitives:Thumb}">
                         <Grid Background="Transparent">
                             <Path Data="M18,2 L2,2 L2,18"
-                                  Stroke="#FF8E98A5"
-                                  StrokeThickness="2"
+                                  Stroke="#46556C"
+                                  StrokeThickness="1"
                                   StrokeStartLineCap="Round"
                                   StrokeEndLineCap="Round"/>
                         </Grid>
@@ -201,8 +277,8 @@
                     <ControlTemplate TargetType="{x:Type primitives:Thumb}">
                         <Grid Background="Transparent">
                             <Path Data="M2,2 L18,2 L18,18"
-                                  Stroke="#FF8E98A5"
-                                  StrokeThickness="2"
+                                  Stroke="#46556C"
+                                  StrokeThickness="1"
                                   StrokeStartLineCap="Round"
                                   StrokeEndLineCap="Round"/>
                         </Grid>
@@ -222,8 +298,8 @@
                     <ControlTemplate TargetType="{x:Type primitives:Thumb}">
                         <Grid Background="Transparent">
                             <Path Data="M2,2 L2,18 L18,18"
-                                  Stroke="#FF8E98A5"
-                                  StrokeThickness="2"
+                                  Stroke="#46556C"
+                                  StrokeThickness="1"
                                   StrokeStartLineCap="Round"
                                   StrokeEndLineCap="Round"/>
                         </Grid>
@@ -243,8 +319,8 @@
                     <ControlTemplate TargetType="{x:Type primitives:Thumb}">
                         <Grid Background="Transparent">
                             <Path Data="M18,2 L18,18 L2,18"
-                                  Stroke="#FF8E98A5"
-                                  StrokeThickness="2"
+                                  Stroke="#46556C"
+                                  StrokeThickness="1"
                                   StrokeStartLineCap="Round"
                                   StrokeEndLineCap="Round"/>
                         </Grid>

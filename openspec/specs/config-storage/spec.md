@@ -7,14 +7,14 @@
 ## Requirements
 
 ### Requirement: 用户配置位置与首次初始化
-系统 SHALL 在 `%APPDATA%/ExShrinkBar/Config/config.json` 读写缩进 JSON；首次无文件时生成并保存一个 ID 为 1、Dock 序号为 1 的 Notepad 根节点。
+系统 SHALL 在 `%APPDATA%/ExShrinkBar/Config/config.json` 读写缩进 JSON；首次无文件时生成并保存一个 ID 为 1 的 Notepad 根节点。
 
 #### Scenario: 首次启动
 - **WHEN** 用户配置文件不存在且目录可写
 - **THEN** 创建必要目录和默认配置文件，并将默认节点加载到内存。
 
 ### Requirement: 配置树序列化
-系统 SHALL 持久化根列表 `buttons` 和节点的 `id`、`name`、`icon`、`dockDisplayOrder`、`configType`、`logicChain`、`arg`；`Parent`、`IsExpanded`、`useChainLogic` 不写入 JSON。动作枚举数值保持 Combine=0、OpenFolder=1、Execute=2、Notepad=3。
+系统 SHALL 持久化根列表 `buttons` 和节点的 `id`、`name`、`icon`、`dockDisplayOrder`、`configType`、`logicChain`、`arg`；`Parent`、`IsExpanded`、`useChainLogic` 不写入 JSON。`dockDisplayOrder` 仅保留为旧配置兼容字段，不参与任何展示或排序行为。动作枚举数值保持 Combine=0、OpenFolder=1、Execute=2、Notepad=3。
 
 #### Scenario: 保存后重新加载
 - **WHEN** 保存具有嵌套 Combine 和动作参数的配置并重新加载
@@ -28,8 +28,8 @@
 - **THEN** 规范化后 path 等于 script；已有非空白 path 时不覆盖。
 
 #### Scenario: 旧根节点缺少展示序号
-- **WHEN** 根节点序号小于等于 0
-- **THEN** 按根列表遍历补齐正序号，递增基准同时考虑已存在的正序号；已有重复正序号不自动去重。
+- **WHEN** 根节点缺少旧展示序号，或旧序号为零、负数、重复值、越界值
+- **THEN** 不补齐或重新赋值该字段，根列表及动作链顺序保持原样。
 
 ### Requirement: 工作副本与编辑器 ID 预留
 系统 SHALL 提供独立的深拷贝配置用于编辑，并通过 `ReserveNextId()` 为编辑器新节点预留大于正式配置整棵树最大 ID 的递增 ID。

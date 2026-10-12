@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Text.Json;
 using System.Linq;
@@ -89,7 +89,6 @@ namespace ExShrinkSidebar.Script.Core
                     {
                         id = 1,
                         name = "记事本",
-                        dockDisplayOrder = 1,
                         configType = ExConfigType.Notepad
                     },
                 }
@@ -182,10 +181,10 @@ namespace ExShrinkSidebar.Script.Core
         {
             config ??= new AppConfig();
             config.buttons ??= new List<ButtonConfig>();
-            NormalizeNodes(config.buttons, null, 1);
+            NormalizeNodes(config.buttons, null);
         }
 
-        private void NormalizeNodes(List<ButtonConfig> nodes, ButtonConfig parent, int nextRootDisplayOrder)
+        private void NormalizeNodes(List<ButtonConfig> nodes, ButtonConfig parent)
         {
             if (nodes == null)
             {
@@ -204,15 +203,7 @@ namespace ExShrinkSidebar.Script.Core
                 node.logicChain ??= new List<ButtonConfig>();
                 node.Parent = parent;
                 node.IsExpanded = node.useChainLogic;
-                if (parent == null && node.dockDisplayOrder <= 0)
-                {
-                    node.dockDisplayOrder = nextRootDisplayOrder;
-                }
-
-                nextRootDisplayOrder = parent == null
-                    ? Math.Max(nextRootDisplayOrder + 1, node.dockDisplayOrder + 1)
-                    : nextRootDisplayOrder;
-                NormalizeNodes(node.logicChain, node, 1);
+                NormalizeNodes(node.logicChain, node);
             }
         }
 

@@ -15,7 +15,7 @@ namespace ExShrinkSidebar.Script.Model
         public string name { get; set; } = string.Empty;
         public string icon { get; set; } = string.Empty;
         /// <summary>
-        /// 根节点在 Dock 中的展示槽位（从 1 开始）。超出当前 Dock 容量的槽位不会显示。
+        /// 仅为旧配置保留的兼容字段；不参与显示、排序、去重或规范化。
         /// </summary>
         public int dockDisplayOrder { get; set; }
 
